@@ -1,0 +1,31 @@
+
+
+.custom-toast-container {
+    width: fit-content;
+    height: 80px;
+    padding: 15px 20px; /* Adjust padding for content spacing */
+    font-size: 15px; /* Adjust font size (smaller) */
+    background-color: white;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* Optional: Style the toast icon specifically (if accessible) */
+ .custom-toast-container .Toastify__toast-icon {
+    width: 30px; /* Reduce icon size */
+  }
+
+.session-button {
+    /* background-color: green; */
+    font-size: 12px;
+    width: fit-content;
+    color: wheat;
+}
+
+.session-button:disabled {
+    background-color: #ccc; /* Change background color */
+    color: #666; /* Change text color */
+    cursor: not-allowed; /* Change cursor */
+  }
