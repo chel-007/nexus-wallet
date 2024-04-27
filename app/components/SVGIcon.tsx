@@ -21,11 +21,15 @@ export const EyeIcon = () => {
     },
   };
 
-  export const SVGLoader = () => (
+  interface SVGLoaderProps {
+    style?: React.CSSProperties; // Define style prop of type CSSProperties
+  }
+
+  export const SVGLoader: React.FC<SVGLoaderProps> = (props) => (
     <svg
       className="loader"
       viewBox="0 0 250 250"
-      style={{ width: '35px', height: '35px' }}
+      style={props.style}
     >
       <circle
         className="path"

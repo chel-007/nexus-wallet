@@ -221,7 +221,7 @@ const WalletCreation: React.FC<WalletCreationProps> = () => {
       />
 
         <button
-        className="w-full py-2 text-white font-medium rounded-lg bg-blue-500 hover:bg-blue-700 disabled:bg-gray-400"
+        className="w-full py-2 text-white font-medium rounded-lg bg-blue-500 hover:bg-opacity-70 disabled:bg-gray-400"
         disabled={!username} // Disable button if username is empty
         onClick={onSubmitCreateUser}
       >
@@ -256,12 +256,12 @@ const WalletCreation: React.FC<WalletCreationProps> = () => {
       <button
         onClick={handleButtonClick}
         disabled={!existingUser}
-        className={`w-1/6 px-4 py-2 rounded-lg ${
-          isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-900'
+        className={`w-1/6 px-4 py-2 rounded-md text-white px-4 ${
+          isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-opacity-70'
         } session-button`}
       >
         {isLoading ? (
-          <SVGLoader />
+          <SVGLoader style={{ height: '19.5px', width: '19.5px' }} />
         ) : showInputs ? (
           'Created'
         ) : (
@@ -317,13 +317,13 @@ const WalletCreation: React.FC<WalletCreationProps> = () => {
       <button
         onClick={onSubmitChallengeID}
         disabled={!walletSelection || !showInputs}
-        className={`w-1/6 px-4 py-2 rounded-lg ${
-          isLoadingC ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-900'
+        className={`w-1/6 px-4 py-2 rounded-md text-white px-4 ${
+          isLoadingC ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-opacity-70'
         } 
         session-button`}
       >
         {isLoadingC ? (
-          <SVGLoader />
+          <SVGLoader style={{ height: '19.5px', width: '19.5px' }} />
         ) : showChallenge ? (
           'Challenge Created'
         ) : (
@@ -345,7 +345,7 @@ const WalletCreation: React.FC<WalletCreationProps> = () => {
       )}
 
     <button
-      className="w-full py-2 text-white font-medium rounded-lg bg-blue-500 hover:bg-blue-700 disabled:bg-gray-400"
+      className="w-full py-2 text-white font-medium rounded-lg bg-blue-500 hover:bg-opacity-70 disabled:bg-gray-400"
       disabled={!challengeId} // Disable button if username is empty
       onClick={onSubmit}
     >

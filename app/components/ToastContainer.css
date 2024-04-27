@@ -18,10 +18,10 @@
   }
 
 .session-button {
-    /* background-color: green; */
-    font-size: 12px;
+    font-size: 13px;
+    word-spacing: 1px;
+    letter-spacing: 0.2px;
     width: fit-content;
-    color: wheat;
 }
 
 .session-button:disabled {
@@ -29,3 +29,7 @@
     color: #666; /* Change text color */
     cursor: not-allowed; /* Change cursor */
   }
+
+.balances {
+  width: fit-content;
+}

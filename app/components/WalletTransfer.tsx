@@ -12,9 +12,8 @@ interface WalletTransferProps {}
 let sdk: W3SSdk
 
 interface WalletData {
-  id: string; // Replace with actual property names and types
+  id: string;
   name: string;
-  balance: string; // Or number depending on your data format
   address: string;
 }
 
@@ -32,6 +31,7 @@ const WalletTransfer: React.FC<WalletTransferProps> = () => {
   const [buttonLStates, setButtonLStates] = useState({
     buttonUserId: false,
     submitButtonB: false,
+    balancesButton: false
     // ... other buttons
   });
   const [wallets, setWallets] = useState<WalletData[]>([]);
@@ -42,6 +42,12 @@ const WalletTransfer: React.FC<WalletTransferProps> = () => {
   const [walletType, setWalletType] = useState<string>('');
   const [walletBlock, setWalletBlock] = useState<string>('');
   const [balances, setBalances] = useState<Record<string, string>>({});
+
+  const expectedTokens = [
+    { id: '5797fbd6-3795-519d-84ca-ec4c5f80c3b1', symbol: 'USDC', name: 'USDC' },
+    { id: '979869da-9115-5f7d-917d-12d434e56ae7', symbol: 'ETH-SEPOILA', name: 'Ethereum-Sepolia' },
+  ];
+
   const [isSendMode, setIsSendMode] = useState(true);
   const [toastShown, setToastShown] = useState(false);
 
@@ -53,7 +59,11 @@ const WalletTransfer: React.FC<WalletTransferProps> = () => {
     }
   }, [toastShown]);
   
-  
+  useEffect(() => {
+    if (walletId) {
+      getTokenBalances(walletId);
+    }
+  }, [walletId]);
 
   const onSubmitUserId = async () => {
     setButtonLStates({ ...buttonLStates, buttonUserId: true });
@@ -133,6 +143,9 @@ const WalletTransfer: React.FC<WalletTransferProps> = () => {
   
       setWallets(data.data.wallets);
   
+      console.log(firstWallet)
+      console.log(data.data.wallets)
+      console.log(wallets)
       // Extract data from first wallet
       const { id, address, blockchain, accountType } = firstWallet;
   
@@ -141,28 +154,45 @@ const WalletTransfer: React.FC<WalletTransferProps> = () => {
       setWalletBlock(blockchain);
       setWalletAddress(address);
   
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      await getTokenBalances(id);
+      // await new Promise((resolve) => setTimeout(resolve, 2000));
+      // await getTokenBalances(id);
+      setSelectedWalletId(id);
+      setSelectedWallet(address);
     } else {
       console.log('No wallets found');
     }
   };
 
-  const getTokenBalances = async (walletId: string) => {
+  const getTokenBalances = async (walletid: string) => {
+    setButtonLStates({ ...buttonLStates, balancesButton: true });
     try {
       console.log('i got here')
-      const response = await axios.get(`http://localhost:3001/getTokenBalances/${walletId}/${userToken}`);
+      const response = await axios.get(`http://localhost:3001/getTokenBalances/${walletid}/${userToken}`);
       const tokenBalances = response.data;
+
+      // Process token balances: (Assuming 'amount' is a string)
+      const processedBalances = tokenBalances.length === 0
+      ? {}
+      : tokenBalances.tokenBalances.reduce((acc: Record<string, string>, balance: { token: { id: string }, amount?: string }) => {
+        acc[balance.token.id] = balance.amount || '0';
+        return acc;
+      }, {} as Record<string, string>);
+    
+
+      setBalances(processedBalances)
+      console.log(processedBalances)
+    
   
-      console.log('Token balances:', tokenBalances);
+      console.log(`Token balances for ${walletid}`, tokenBalances);
 
       toast.success("Token Balances retrieved successfully")
-  
-      // You can further process the token balances data here
-      // and potentially update the UI with the retrieved information
+
     } catch (error) {
       console.error('Error getting token balances:', error);
       toast.error("Error getting Token Balances. Please Try Again")
+    }
+    finally {
+      setButtonLStates({ ...buttonLStates, balancesButton: false });
     }
   };
   
@@ -188,11 +218,11 @@ const WalletTransfer: React.FC<WalletTransferProps> = () => {
     setIsSendMode(!isSendMode);
   };
 
-const handleWalletSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
-  const selectedId = event.target.value as string;
-  setSelectedWalletId(selectedId); // Update selected wallet ID
-  getTokenBalances(walletId)
-};
+  const handleWalletSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedId = event.target.value as string;
+    setSelectedWalletId(selectedId); // Update selected wallet ID
+    getTokenBalances(selectedId); // Use the selected ID for fetching balances
+  };
 
   return (
     <div className="flex flex-col space-y-4">
@@ -223,51 +253,114 @@ const handleWalletSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
           <option value="">Select Wallet</option>
           {wallets.map((wallet) => (
             <option key={wallet.id} value={wallet.id}>
-              {wallet.address} ({balances[wallet.id] || 'Loading...'})
+              {wallet.address} ({balances[wallet.id] || '.'})
             </option>
           ))}
         </select>
-      </div>
 
-      <div className="flex justify-between items-center">
-        <div className="flex items-center">
+        {wallets.length > 0 && (
           <button
-            className={`px-4 py-2 rounded-md text-white ${isSendMode ? 'bg-green-500' : 'bg-gray-400'} hover:bg-opacity-70 focus:outline-none`}
-            onClick={handleSendReceiveToggle}
+            onClick={() => getTokenBalances(selectedWalletId)}
+            className={`w-1/6 px-4 py-2 rounded-md text-white px-4 hover:bg-opacity-70 ${
+              buttonLStates.balancesButton ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500'
+            } balances`}
           >
-            {isSendMode ? 'Send' : 'Receive'}
+            {buttonLStates.balancesButton ? (
+              <SVGLoader style={{ height: '24px', width: '24px' }} />
+            ) : (
+              'Get Tokens'
+            )}
           </button>
-        </div>
+        )}
+
+      
+        {selectedWallet && ( // Check if selectedWallet exists
+          <div key={selectedWalletId}>
+            {/* ... other wallet details */}
+            <div>
+            <h2
+            className='text-white'
+            >Balances</h2>
+              {expectedTokens.map((token) => (
+                <div
+                  key={token.id}
+                  className="w-1/4 space-x-3 border border-gray-300 bg-white rounded-md px-2 py-1 flex items-center justify-between mb-4 text-sm"
+                >
+                  <span className="text-gray-700 font-medium ">{token.symbol}:</span>
+                  <span className="flex-grow text-gray-500">
+                    {balances[token.id] || '0'} {token.symbol}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
       </div>
 
-      {isSendMode ? (
-        <div className="bg-gray-800 rounded-md p-4 flex flex-col space-y-2">
-          <h3>Send Tokens</h3>
-          {/* Input fields for recipient address, token selection, amount, etc. */}
-          <input
-            className="text-gray-700 px-3 py-2 rounded-md focus:outline-none"
-            placeholder="Recipient Address"
-          />
-          <select className="text-gray-700 px-3 py-2 rounded-md focus:outline-none">
-            <option value="">Select Token</option>
-            {/* Options for available tokens */}
-          </select>
-          <input
-            className="text-gray-700 px-3 py-2 rounded-md focus:outline-none"
-            placeholder="Amount"
-            type="number"
-          />
-          <button className="px-4 py-2 rounded-md text-white bg-green-500 hover:bg-opacity-70 focus:outline-none">
-            Send
-          </button>
-        </div>
-      ) : (
-        <div className="bg-gray-800 rounded-md p-4 flex flex-col space-y-2">
-          <h3>Receive Tokens</h3>
-          {/* Display user's wallet address for receiving */}
-          <p className="text-gray-300">{/* Replace with user's wallet address */}</p>
-        </div>
-      )}
+  <div className="bg-gray-600 rounded-md justify-center items-center mt-2"> {/* Main div - rounded */}
+  <div className="flex w-1/2 mx-auto rounded-xl border border-opacity-20 border-cream-100 mt-4 mb-4 p-2"> {/* Send/Receive options - centered */}
+    <button
+      className={`w-full rounded-md px-2 py-1.5 text-gray-300 ${
+        isSendMode ? 'bg-gray-400 text-black' : ''
+      } focus:outline-none`}
+      onClick={() => setIsSendMode(true)}
+    >
+      Send
+    </button>
+    <button
+      className={`w-full rounded-md px-2 py-1.5 text-gray-300 ${
+        !isSendMode ? 'bg-gray-400 text-black' : ''
+      } focus:outline-none`}
+      onClick={() => setIsSendMode(false)}
+    >
+      Receive
+    </button>
+  </div>
+
+  <div className="flex justify-between">
+    <div className={`flex-1 ${isSendMode ? 'block' : 'hidden'}`}> {/* Send content */}
+      <div className="p-4 flex flex-col space-y-4">
+        <h3 className="text-lg font-medium text-white">Transfer Tokens</h3>
+        {/* Input fields for recipient address, token selection, amount, etc. */}
+        <input className="text-gray-700 px-3 py-2 rounded-md focus:outline-none" placeholder="Recipient Address" />
+        <select className="text-gray-700 px-3 py-2 rounded-md focus:outline-none">
+          <option value="">Select Token</option>
+          {/* Options for available tokens */}
+        </select>
+        <input className="text-gray-700 px-3 py-2 rounded-md focus:outline-none" placeholder="Amount" type="number" />
+        <button
+          disabled={!balances}
+          className="px-4 py-2 rounded-md text-white bg-blue-500 hover:bg-opacity-70 disabled:bg-gray-400 focus:outline-none"
+        >
+          Send
+        </button>
+      </div>
+    </div>
+    <div className={`flex-1 ${!isSendMode ? 'block' : 'hidden'}`}> {/* Receive content */}
+      <div className="p-4 flex flex-col space-y-4">
+        <h3
+        className='text-lg font-medium text-white'
+        >Receive Tokens</h3>
+        {/* Input fields for recipient address, token selection, amount, etc. */}
+        <input className="text-gray-700 px-3 py-2 rounded-md focus:outline-none" placeholder="Recipient Address" />
+        <select className="text-gray-700 px-3 py-2 rounded-md focus:outline-none">
+          <option value="">Select Token</option>
+          {/* Options for available tokens */}
+        </select>
+        <input className="text-gray-700 px-3 py-2 rounded-md focus:outline-none" placeholder="Amount" type="number" />
+        <button
+          disabled={!balances}
+          className="px-4 py-2 rounded-md text-white bg-blue-500 hover:bg-opacity-70 disabled:bg-gray-400 focus:outline-none"
+        >
+          Send
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 
       <div>
         <ToastContainer />
