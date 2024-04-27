@@ -31,7 +31,8 @@ const WalletTransfer: React.FC<WalletTransferProps> = () => {
   const [buttonLStates, setButtonLStates] = useState({
     buttonUserId: false,
     submitButtonB: false,
-    balancesButton: false
+    balancesButton: false,
+    challengeButton: false,
     // ... other buttons
   });
   const [wallets, setWallets] = useState<WalletData[]>([]);
@@ -47,6 +48,12 @@ const WalletTransfer: React.FC<WalletTransferProps> = () => {
     { id: '5797fbd6-3795-519d-84ca-ec4c5f80c3b1', symbol: 'USDC', name: 'USDC' },
     { id: '979869da-9115-5f7d-917d-12d434e56ae7', symbol: 'ETH-SEPOILA', name: 'Ethereum-Sepolia' },
   ];
+
+  const [destinationAdd, setDestinationAdd] = useState('');
+  const [selectedToken, setSelectedToken] = useState('');
+  const [transferAmount, setTransferAmount] = useState(0);
+  const [transferWallet, setTransferWallet] = useState('');
+  const [showTrfChallenge, setShowTrfChallenge] = useState(false);
 
   const [isSendMode, setIsSendMode] = useState(true);
   const [toastShown, setToastShown] = useState(false);
@@ -70,10 +77,10 @@ const WalletTransfer: React.FC<WalletTransferProps> = () => {
   
     try {
       let prevUser = localStorage.getItem('userId');
-      console.log(prevUser)
-      console.log(userToken)
-      console.log(userId)
-      console.log(localStorage.getItem('sessionTokenExpiration'))
+      // console.log(prevUser)
+      // console.log(userToken)
+      // console.log(userId)
+      // console.log(localStorage.getItem('sessionTokenExpiration'))
       let expirationTime = localStorage.getItem('sessionTokenExpiration')
 
       if (userId === prevUser && userToken !== '' && expirationTime !== null && parseInt(expirationTime) > Date.now()) {
@@ -179,9 +186,7 @@ const WalletTransfer: React.FC<WalletTransferProps> = () => {
       }, {} as Record<string, string>);
     
 
-      setBalances(processedBalances)
-      console.log(processedBalances)
-    
+      setBalances(processedBalances) 
   
       console.log(`Token balances for ${walletid}`, tokenBalances);
 
@@ -195,7 +200,43 @@ const WalletTransfer: React.FC<WalletTransferProps> = () => {
       setButtonLStates({ ...buttonLStates, balancesButton: false });
     }
   };
-  
+
+  const challengeTokenTransfer = async (
+    userToken: string, 
+    transferAmount: number, 
+    selectedWalletId: string, 
+    destinationAdd: string,
+    selectedToken: string,
+  ) => {
+    setButtonLStates({ ...buttonLStates, challengeButton: true });
+    try {
+      console.log('i got here')
+
+      const stringTransferAmount = transferAmount.toString();
+      const response = await axios.get(`
+      http://localhost:3001/outboundTransfer/${userToken}/${stringTransferAmount}/${selectedWalletId}/${destinationAdd}/${selectedToken}
+      `);
+
+      if (response.status === 200) {
+        const { challengeId } = response.data.trfRes;
+        console.log(response.data.trfRes.challengeId)
+        setChallengeId(challengeId)
+       
+      setShowTrfChallenge(true)
+      }
+      else{
+        console.log(response.statusText)
+        toast.error(`${response.status}: Something went wrong while creating challengeId`)
+      }
+
+    } catch (error) {
+      console.error('Error creating challengeId for Token Transfer:', error);
+      toast.error("Error creating challengeId for Token Transfer")
+    }
+    finally {
+      setButtonLStates({ ...buttonLStates, challengeButton: false });
+    }
+  };
 
 
   
@@ -214,158 +255,251 @@ const WalletTransfer: React.FC<WalletTransferProps> = () => {
     });
   }, [appId, userToken, encryptionKey, challengeId, sdk]);
 
-  const handleSendReceiveToggle = () => {
-    setIsSendMode(!isSendMode);
+  const handleTokenSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const tokenId = event.target.value;
+    setSelectedToken(tokenId);
+    if (balances[tokenId] === '0') {
+      setSelectedToken('');
+      toast.info('Cannot select token with zero balance');
+    }
   };
 
   const handleWalletSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedId = event.target.value as string;
-    setSelectedWalletId(selectedId); // Update selected wallet ID
-    getTokenBalances(selectedId); // Use the selected ID for fetching balances
+    setSelectedWalletId(selectedId);
+    getTokenBalances(selectedId);
   };
 
+  // console.log(`this is userToken, ${userToken}`)
+  // console.log(`this is traamt, ${transferAmount}`)
+  // console.log(`this is selectedWalletId,${selectedWalletId}`)
+  // console.log(destinationAdd)
+  // console.log(`this is selectedTokenId, ${selectedToken}`)
+
   return (
-    <div className="flex flex-col space-y-4">
+<div className="flex flex-col space-y-4">
+  <div className="bg-gray-600 mt-8 mb-4 pb-4 rounded-md p-4 flex flex-col space-y-4">
+    <h3 className="text-lg font-medium text-white">Your Wallet & Token Balances</h3>
 
-      <div className="bg-gray-600 mt-8 mb-4 pb-4 rounded-md p-4 flex flex-col space-y-4">
-        <h3 className="text-lg font-medium text-white">Your Wallet & Token Balances</h3>
+    <div className="flex space-x-2">
+      <input
+        className="text-gray-700 px-3 py-2 rounded-md focus:outline-none"
+        placeholder="Enter User ID"
+        value={userId}
+        onChange={(event) => setUserId(event.target.value)}
+      />
+      <button
+        className="px-4 py-2 rounded-md text-white bg-blue-500 hover:bg-opacity-70 focus:outline-none"
+        onClick={onSubmitUserId}
+      >
+        Submit
+      </button>
+    </div>
 
-        <div className="flex space-x-2">
-          <input
-            className="text-gray-700 px-3 py-2 rounded-md focus:outline-none"
-            placeholder="Enter User ID"
-            value={userId}
-            onChange={(event) => setUserId(event.target.value)}
-          />
-          <button
-            className="px-4 py-2 rounded-md text-white bg-blue-500 hover:bg-opacity-70 focus:outline-none"
-            onClick={onSubmitUserId}
-          >
-            Submit
-          </button>
-        </div>
+    <select
+      className="text-gray-700 px-3 py-2 rounded-md focus:outline-none"
+      value={selectedWalletId}
+      onChange={handleWalletSelect}
+    >
+      <option value="">Select Wallet</option>
+      {wallets.map((wallet) => (
+        <option key={wallet.id} value={wallet.id}>
+          {wallet.address}
+        </option>
+      ))}
+    </select>
 
-        <select
-          className="text-gray-700 px-3 py-2 rounded-md focus:outline-none"
-          value={selectedWalletId}
-          onChange={handleWalletSelect}
-        >
-          <option value="">Select Wallet</option>
-          {wallets.map((wallet) => (
-            <option key={wallet.id} value={wallet.id}>
-              {wallet.address} ({balances[wallet.id] || '.'})
-            </option>
-          ))}
-        </select>
-
-        {wallets.length > 0 && (
-          <button
-            onClick={() => getTokenBalances(selectedWalletId)}
-            className={`w-1/6 px-4 py-2 rounded-md text-white px-4 hover:bg-opacity-70 ${
-              buttonLStates.balancesButton ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500'
-            } balances`}
-          >
-            {buttonLStates.balancesButton ? (
-              <SVGLoader style={{ height: '24px', width: '24px' }} />
-            ) : (
-              'Get Tokens'
-            )}
-          </button>
+    {wallets.length > 0 && (
+      <button
+        onClick={() => getTokenBalances(selectedWalletId)}
+        className={`w-1/6 px-4 py-2 rounded-md text-white px-4 hover:bg-opacity-70 ${
+          buttonLStates.balancesButton ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500'
+        } balances`}
+      >
+        {buttonLStates.balancesButton ? (
+          <SVGLoader style={{ height: '24px', width: '24px' }} />
+        ) : (
+          'Get Tokens'
         )}
+      </button>
+    )}
 
-      
-        {selectedWallet && ( // Check if selectedWallet exists
-          <div key={selectedWalletId}>
-            {/* ... other wallet details */}
-            <div>
-            <h2
-            className='text-white'
-            >Balances</h2>
-              {expectedTokens.map((token) => (
-                <div
-                  key={token.id}
-                  className="w-1/4 space-x-3 border border-gray-300 bg-white rounded-md px-2 py-1 flex items-center justify-between mb-4 text-sm"
-                >
-                  <span className="text-gray-700 font-medium ">{token.symbol}:</span>
-                  <span className="flex-grow text-gray-500">
-                    {balances[token.id] || '0'} {token.symbol}
-                  </span>
-                </div>
-              ))}
+    {selectedWallet && (
+      <div key={selectedWalletId}>
+        {/* ... other wallet details */}
+        <div>
+          <h2 className='text-white'>Balances</h2>
+          {expectedTokens.map((token) => (
+            <div
+              key={token.id}
+              className="w-1/4 space-x-3 border border-gray-300 bg-white rounded-md px-2 py-1 flex items-center justify-between mb-4 text-sm"
+            >
+              <span className="text-gray-700 font-medium ">{token.symbol}:</span>
+              <span className="flex-grow text-gray-500">
+                {balances[token.id] || '0'} {token.symbol}
+              </span>
             </div>
-          </div>
-        )}
-
+          ))}
+        </div>
       </div>
+    )}
+  </div>
 
   <div className="bg-gray-600 rounded-md justify-center items-center mt-2"> {/* Main div - rounded */}
-  <div className="flex w-1/2 mx-auto rounded-xl border border-opacity-20 border-cream-100 mt-4 mb-4 p-2"> {/* Send/Receive options - centered */}
-    <button
-      className={`w-full rounded-md px-2 py-1.5 text-gray-300 ${
-        isSendMode ? 'bg-gray-400 text-black' : ''
-      } focus:outline-none`}
-      onClick={() => setIsSendMode(true)}
-    >
-      Send
-    </button>
-    <button
-      className={`w-full rounded-md px-2 py-1.5 text-gray-300 ${
-        !isSendMode ? 'bg-gray-400 text-black' : ''
-      } focus:outline-none`}
-      onClick={() => setIsSendMode(false)}
-    >
-      Receive
-    </button>
+    <div className="flex w-1/2 mx-auto rounded-xl border border-opacity-20 border-cream-100 mt-4 mb-4 p-2"> {/* Send/Receive options - centered */}
+      <button
+        className={`w-full rounded-md px-2 py-1.5 text-gray-300 ${
+          isSendMode ? 'bg-gray-400 text-black' : ''
+        } focus:outline-none`}
+        onClick={() => setIsSendMode(true)}
+      >
+        Send
+      </button>
+      <button
+        className={`w-full rounded-md px-2 py-1.5 text-gray-300 ${
+          !isSendMode ? 'bg-gray-400 text-black' : ''
+        } focus:outline-none`}
+        onClick={() => setIsSendMode(false)}
+      >
+        Receive
+      </button>
+    </div>
+
+    <div className="flex justify-between">
+      <div className={`flex-1 ${isSendMode ? 'block' : 'hidden'}`}> {/* Send content */}
+        <div className="p-4 flex flex-col space-y-4">
+          <h3 className="text-lg font-medium text-white">Transfer Tokens</h3>
+          {/* Input fields for recipient address, token selection, amount, etc. */}
+          <input
+            className="text-gray-700 px-3 py-2 rounded-md focus:outline-none"
+            placeholder="Recipient Address"
+            type="string"
+            value={destinationAdd}
+            minLength={40}
+            maxLength={60}
+            onChange={(e) => {
+              const value = e.target.value.slice(0, 50); // Limit input length to 30
+              setDestinationAdd(value);
+              if (value.length % 10 === 0) {
+                if(value.length < 40){
+                // Show error message (replace with your error handling logic)
+                toast.info("Your recipient Address must be longer than 20 characters");
+                }
+              }
+            }}
+          />
+
+          <select
+            className="text-gray-700 px-3 py-2 rounded-md focus:outline-none"
+            value={transferWallet}
+            onChange={(e) => {
+              setTransferWallet(e.target.value);
+              setSelectedWalletId(e.target.value);
+              getTokenBalances(e.target.value);
+            }}
+          >
+            <option value="">Transfer From Wallet</option>
+            {wallets.map((wallet) => (
+              <option key={wallet.id} value={wallet.id}>
+                {wallet.address}
+              </option>
+            ))}
+          </select>
+
+          <select
+            className="text-gray-700 px-3 py-2 rounded-md focus:outline-none"
+            value={selectedToken}
+            onChange={handleTokenSelect}
+          >
+            <option value="">Select Token</option>
+            {expectedTokens.map((token) => (
+              <option key={token.id} value={token.id}>
+                {token.symbol} ({balances[token.id] || 0})
+              </option>
+            ))}
+          </select>
+          <input
+            className="text-gray-700 px-3 py-2 rounded-md focus:outline-none"
+            placeholder="Amount"
+            type="number"
+            value={transferAmount}
+            onChange={(e) => {
+              setTransferAmount(parseFloat(e.target.value));
+            }}
+          />
+          <button
+            onClick={() => challengeTokenTransfer(userToken, transferAmount, selectedWalletId, 
+              destinationAdd, selectedToken)}
+            disabled={!transferAmount || !destinationAdd}
+            className={`w-1/6 px-4 py-2 rounded-md text-white px-4 ${
+              buttonLStates.challengeButton ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-opacity-70'
+            } session-button`}
+          >
+            {buttonLStates.challengeButton ? (
+              <SVGLoader style={{ height: '19.5px', width: '19.5px' }} />
+            ) : showTrfChallenge ? (
+              'Challenge Created'
+            ) : (
+              'Create Challenge Token'
+            )}
+          </button>
+
+          {showTrfChallenge && (
+            <div className='w-1/2 flex flex-col items-left'>
+              <label className="text-xs text-gray-500">Challenge Id</label>
+              <input
+                className="px-4 py-2 rounded-lg border mt-2 border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 mr-4 mt-2"
+                type="text"
+                value={challengeId}
+                onChange={(event) => setChallengeId(event.target.value)}
+                readOnly
+              />
+            </div>
+          )}
+
+
+          <button
+            disabled={!balances || !selectedToken || !transferAmount || !transferWallet ||!destinationAdd}
+            className="px-4 py-2 rounded-md text-white bg-blue-500 hover:bg-opacity-70 disabled:bg-gray-400 focus:outline-none"
+            onClick={onSubmit}
+          >
+            Send
+          </button>
+        </div>
+      </div>
+      <div className={`flex-1 ${!isSendMode ? 'block' : 'hidden'}`}> {/* Receive content */}
+        <div className="p-4 flex flex-col space-y-4">
+          <h3 className='text-lg font-medium text-white'>Receive Tokens</h3>
+          {/* Input fields for recipient address, token selection, amount, etc. */}
+          <input
+            className="text-gray-700 px-3 py-2 rounded-md focus:outline-none"
+            placeholder="Recipient Address"
+            type="string"
+            value={destinationAdd}
+            onChange={(e) => {
+              setDestinationAdd(e.target.value);
+            }}
+          />
+          <select className="text-gray-700 px-3 py-2 rounded-md focus:outline-none">
+            <option value="">Select Token</option>
+            {/* Options for available tokens */}
+          </select>
+
+          <button
+            disabled={!balances || !selectedToken || !transferAmount || !transferWallet}
+            className="px-4 py-2 rounded-md text-white bg-blue-500 hover:bg-opacity-70 disabled:bg-gray-400 focus:outline-none"
+          >
+            Send
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <div className="flex justify-between">
-    <div className={`flex-1 ${isSendMode ? 'block' : 'hidden'}`}> {/* Send content */}
-      <div className="p-4 flex flex-col space-y-4">
-        <h3 className="text-lg font-medium text-white">Transfer Tokens</h3>
-        {/* Input fields for recipient address, token selection, amount, etc. */}
-        <input className="text-gray-700 px-3 py-2 rounded-md focus:outline-none" placeholder="Recipient Address" />
-        <select className="text-gray-700 px-3 py-2 rounded-md focus:outline-none">
-          <option value="">Select Token</option>
-          {/* Options for available tokens */}
-        </select>
-        <input className="text-gray-700 px-3 py-2 rounded-md focus:outline-none" placeholder="Amount" type="number" />
-        <button
-          disabled={!balances}
-          className="px-4 py-2 rounded-md text-white bg-blue-500 hover:bg-opacity-70 disabled:bg-gray-400 focus:outline-none"
-        >
-          Send
-        </button>
-      </div>
-    </div>
-    <div className={`flex-1 ${!isSendMode ? 'block' : 'hidden'}`}> {/* Receive content */}
-      <div className="p-4 flex flex-col space-y-4">
-        <h3
-        className='text-lg font-medium text-white'
-        >Receive Tokens</h3>
-        {/* Input fields for recipient address, token selection, amount, etc. */}
-        <input className="text-gray-700 px-3 py-2 rounded-md focus:outline-none" placeholder="Recipient Address" />
-        <select className="text-gray-700 px-3 py-2 rounded-md focus:outline-none">
-          <option value="">Select Token</option>
-          {/* Options for available tokens */}
-        </select>
-        <input className="text-gray-700 px-3 py-2 rounded-md focus:outline-none" placeholder="Amount" type="number" />
-        <button
-          disabled={!balances}
-          className="px-4 py-2 rounded-md text-white bg-blue-500 hover:bg-opacity-70 disabled:bg-gray-400 focus:outline-none"
-        >
-          Send
-        </button>
-      </div>
-    </div>
+  <div>
+    <ToastContainer />
   </div>
 </div>
-
-
-
-      <div>
-        <ToastContainer />
-      </div>
-    </div>
   );
 };
 
