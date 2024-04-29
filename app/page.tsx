@@ -1,7 +1,8 @@
 "use client"
 import React, { useState } from 'react';
 import WalletCreation from './components/WalletCreation';
-import WalletTransfer from './components/WalletTransfer'
+import WalletTransfer from './components/WalletTransfer';
+import WalletRecovery from './components/WalletRecovery';
 
 interface WalletProps {}
 
@@ -63,8 +64,7 @@ const Wallet: React.FC<WalletProps> = () => {
       </div>
         {selectedOption === 'walletCreation' && <WalletCreation />}
         {selectedOption === 'walletTransfer' && <WalletTransfer />}
-
-        {/* {selectedOption === 'walletRecovery' && <WalletRecovery />} */}
+        {selectedOption === 'walletRecovery' && <WalletRecovery />}
       </div>
     </div>
   );

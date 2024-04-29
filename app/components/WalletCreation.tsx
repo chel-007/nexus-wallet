@@ -1,8 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { ToastContainer, toast } from 'react-toastify'
 import { W3SSdk } from '@circle-fin/w3s-pw-web-sdk'
-import { EyeIcon } from './SVGIcon'
-import { SVGLoader } from './SVGIcon';
+import { SVGLoader, PasswordEye } from './SVGIcon';
 import axios, { AxiosError } from 'axios'
 import './ToastContainer.css'
 import 'react-toastify/dist/ReactToastify.css';
@@ -238,8 +237,9 @@ const WalletCreation: React.FC<WalletCreationProps> = () => {
               value={getMaskedValue(appId)} // Display masked value
               readOnly // Make input read-only
             />
-            <button className="ml-2 text-gray-500 hover:text-blue-500" onClick={handleUnmask}>
-                <EyeIcon></EyeIcon>
+            <button className="mr-5 mt-1 text-gray-700 hover:text-blue-500" onClick={handleUnmask}>
+                {/* <EyeIcon></EyeIcon> */}
+                <PasswordEye></PasswordEye>
             </button>
           </div>
       </div>

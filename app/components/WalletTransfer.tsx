@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { ToastContainer, toast } from 'react-toastify'
 import { W3SSdk } from '@circle-fin/w3s-pw-web-sdk'
-import { EyeIcon } from './SVGIcon'
+import { EyeIcon, CopyIcon, PasswordEye } from './SVGIcon'
 import { SVGLoader } from './SVGIcon';
 import axios, { AxiosError } from 'axios'
 import './ToastContainer.css'
@@ -30,7 +30,7 @@ const WalletTransfer: React.FC<WalletTransferProps> = () => {
   const [challengeId, setChallengeId] = useState('');
   const [buttonLStates, setButtonLStates] = useState({
     buttonUserId: false,
-    submitButtonB: false,
+    submitButton: false,
     balancesButton: false,
     challengeButton: false,
     // ... other buttons
@@ -73,7 +73,7 @@ const WalletTransfer: React.FC<WalletTransferProps> = () => {
   }, [walletId]);
 
   const onSubmitUserId = async () => {
-    setButtonLStates({ ...buttonLStates, buttonUserId: true });
+    setButtonLStates({ ...buttonLStates, submitButton: true });
   
     try {
       let prevUser = localStorage.getItem('userId');
@@ -139,7 +139,7 @@ const WalletTransfer: React.FC<WalletTransferProps> = () => {
       toast.error(error.message)
       } 
     } finally {
-      setButtonLStates({ ...buttonLStates, buttonUserId: false });
+      setButtonLStates({ ...buttonLStates, submitButton: false });
     }
   };
 
@@ -270,11 +270,11 @@ const WalletTransfer: React.FC<WalletTransferProps> = () => {
     getTokenBalances(selectedId);
   };
 
-  // console.log(`this is userToken, ${userToken}`)
+  console.log(`this is userToken, ${userToken}`)
   // console.log(`this is traamt, ${transferAmount}`)
   // console.log(`this is selectedWalletId,${selectedWalletId}`)
   // console.log(destinationAdd)
-  // console.log(`this is selectedTokenId, ${selectedToken}`)
+  console.log(`this is selectedTokenId, ${selectedToken}`)
 
   return (
 <div className="flex flex-col space-y-4">
@@ -289,10 +289,16 @@ const WalletTransfer: React.FC<WalletTransferProps> = () => {
         onChange={(event) => setUserId(event.target.value)}
       />
       <button
-        className="px-4 py-2 rounded-md text-white bg-blue-500 hover:bg-opacity-70 focus:outline-none"
         onClick={onSubmitUserId}
+        className={`px-4 py-2 rounded-md text-white bg-blue-500 hover:bg-opacity-70 focus:outline-none ${
+          buttonLStates.submitButton ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-500'
+        } balances`}
       >
-        Submit
+        {buttonLStates.submitButton ? (
+          <SVGLoader style={{ height: '24.2px', width: '24.2px' }} />
+        ) : (
+          'Submit'
+        )}
       </button>
     </div>
 
@@ -468,22 +474,27 @@ const WalletTransfer: React.FC<WalletTransferProps> = () => {
         </div>
       </div>
       <div className={`flex-1 ${!isSendMode ? 'block' : 'hidden'}`}> {/* Receive content */}
-        <div className="p-4 flex flex-col space-y-4">
-          <h3 className='text-lg font-medium text-white'>Receive Tokens</h3>
-          {/* Input fields for recipient address, token selection, amount, etc. */}
-          <input
-            className="text-gray-700 px-3 py-2 rounded-md focus:outline-none"
-            placeholder="Recipient Address"
-            type="string"
-            value={destinationAdd}
-            onChange={(e) => {
-              setDestinationAdd(e.target.value);
-            }}
-          />
-          <select className="text-gray-700 px-3 py-2 rounded-md focus:outline-none">
-            <option value="">Select Token</option>
-            {/* Options for available tokens */}
-          </select>
+        <div className="p-4 flex flex-col space-y-6">
+        <h3 className="text-lg font-medium text-white">Receive Tokens</h3>
+
+          {/* List of user wallet addresses with copy icons */}
+          <div className="space-y-8">
+          {wallets?.map((wallet: WalletData) => ( // Use the correct interface type
+            <div key={wallet.id} className="flex items-center space-x-32">
+              <span className="text-gray-300 text-lg overflow-ellipsis whitespace-nowrap max-w-xs">{wallet.address}</span>
+              <button
+                className="p-1 rounded-md bg-gray-200 hover:bg-gray-300 focus:outline-none"
+                onClick={() => {
+                  navigator.clipboard.writeText(wallet.address)
+                    .then(() => toast.info("Address copied successfully!")) // Success message
+                    .catch((error) => toast.error("Failed to copy address", error)); // Error handling
+                }}
+              >
+                <CopyIcon opacity={1} style={{width: '16px', height: '16px'}}/>
+              </button>
+            </div>
+          ))}
+          </div>
 
           <button
             disabled={!balances || !selectedToken || !transferAmount || !transferWallet}
