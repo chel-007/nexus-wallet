@@ -36,7 +36,7 @@ const WalletRecovery: React.FC<WalletRecoveryProps> = () => {
   const [challengeButton, setChallengeButton] = useState(false);
   const [showChallenge, setShowChallenge] = useState(false);
 
-  const useLocalBackend = false; // Change this based on your environment
+  const useLocalBackend = true; // Change this based on your environment
 
   const backendUrl = useLocalBackend ? 'http://localhost:3001' : 'https://nexus-wallet-script-production.up.railway.app';
 

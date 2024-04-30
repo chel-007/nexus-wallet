@@ -5,12 +5,24 @@ import WalletTransfer from './components/WalletTransfer';
 import WalletRecovery from './components/WalletRecovery';
 import Crafting from './components/Crafting';
 import io from 'socket.io-client'; // Assuming you installed socket.io-client
+import { ToastContainer, toast } from 'react-toastify';
+import './components/ToastContainer.css';
+import 'react-toastify/dist/ReactToastify.css';
 
-const socket = io('https://nexus-wallet-script-production.up.railway.app/notify');
+
+const socket = io('https://nexus-wallet-script-production.up.railway.app/', {
+  transports: ['websocket']
+});
+
 
 socket.on('connect', () => {
   console.log('Connected to WebSocket server');
 });
+
+socket.on('error', (error) => {
+  console.error('Socket error:', error);
+});
+
 
 socket.on('disconnect', () => {
   console.log('Disconnected from WebSocket server');
@@ -18,6 +30,12 @@ socket.on('disconnect', () => {
 
 socket.on('notification', (notificationData) => {
   console.log('Received notification:', notificationData);
+
+  const {notification} = notificationData
+  console.log(notification)
+
+  toast.info(`New Notification, ${notification}`)
+
 
   // Update your UI based on the received notification data (e.g., display notification)
   // ... (Your UI update logic based on notificationData)
@@ -157,6 +175,7 @@ const Wallet: React.FC<WalletProps> = () => {
         {selectedOption === 'walletRecovery' && <WalletRecovery />}
         {selectedOption === 'Crafting' && <Crafting />}
       </div>
+      <ToastContainer/>
     </div>
   );
 };
