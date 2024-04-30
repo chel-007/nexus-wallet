@@ -36,7 +36,11 @@ const WalletRecovery: React.FC<WalletRecoveryProps> = () => {
   const [challengeButton, setChallengeButton] = useState(false);
   const [showChallenge, setShowChallenge] = useState(false);
 
-  const backendUrl = process.env.REACT_APP_BACKEND_URL; 
+  const useLocalBackend = false; // Change this based on your environment
+
+  const backendUrl = useLocalBackend ? 'http://localhost:3001' : 'https://nexus-wallet-script-production.up.railway.app';
+
+  //const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
   useEffect(() => {
     console.log(selectedUser);
@@ -44,6 +48,8 @@ const WalletRecovery: React.FC<WalletRecoveryProps> = () => {
   // Fetch user accounts (assumed API endpoint)
   const fetchUserAccounts = async () => {
     try {
+    
+      toast.warn("Hey")
 
       setGetUsers(true);
       const response = await axios.get(`${backendUrl}/getUsers/${userToken}`);

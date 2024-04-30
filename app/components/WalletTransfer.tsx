@@ -58,6 +58,11 @@ const WalletTransfer: React.FC<WalletTransferProps> = () => {
   const [isSendMode, setIsSendMode] = useState(true);
   const [toastShown, setToastShown] = useState(false);
 
+  const useLocalBackend = false; // Change this based on your environment
+
+  const backendUrl = useLocalBackend ? 'http://localhost:3001' : 'https://nexus-wallet-script-production.up.railway.app';
+
+
   useEffect(() => {
     if (!toastShown) {
       toast.info('Welcome to the page! Your last session data has been retrieved.');
@@ -92,14 +97,14 @@ const WalletTransfer: React.FC<WalletTransferProps> = () => {
       
 
       if (userId === prevUser && userToken !== '' && expirationTime !== null && parseInt(expirationTime) > Date.now()) {
-        const walletResponse = await axios.get(`http://localhost:3001/getWalletID/${userToken}`);
+        const walletResponse = await axios.get(`${backendUrl}/getWalletID/${userToken}`);
   
         console.log(walletResponse.data); // Log the wallets data received from the backend
         processWalletResponse(walletResponse.data);
       }
        else {
         // UserToken doesn't exist or has expired, fetch userId
-        const response = await axios.get(`http://localhost:3001/createSession/${userId}`);
+        const response = await axios.get(`${backendUrl}/createSession/${userId}`);
 
         console.log(response)
 
@@ -120,7 +125,7 @@ const WalletTransfer: React.FC<WalletTransferProps> = () => {
 
       }
 
-        const walletResponse = await axios.get(`http://localhost:3001/getWalletID/${userToken}`);
+        const walletResponse = await axios.get(`${backendUrl}/getWalletID/${userToken}`);
   
         console.log(walletResponse.data);
 
@@ -188,7 +193,7 @@ const WalletTransfer: React.FC<WalletTransferProps> = () => {
     setButtonLStates({ ...buttonLStates, balancesButton: true });
     try {
       console.log('i got here')
-      const response = await axios.get(`http://localhost:3001/getTokenBalances/${walletid}/${userToken}`);
+      const response = await axios.get(`${backendUrl}/getTokenBalances/${walletid}/${userToken}`);
       const tokenBalances = response.data;
 
       // Process token balances: (Assuming 'amount' is a string)
@@ -228,7 +233,7 @@ const WalletTransfer: React.FC<WalletTransferProps> = () => {
 
       const stringTransferAmount = transferAmount.toString();
       const response = await axios.get(`
-      http://localhost:3001/outboundTransfer/${userToken}/${stringTransferAmount}/${selectedWalletId}/${destinationAdd}/${selectedToken}
+      ${backendUrl}/outboundTransfer/${userToken}/${stringTransferAmount}/${selectedWalletId}/${destinationAdd}/${selectedToken}
       `);
 
       if (response.status === 200) {

@@ -29,6 +29,12 @@ const WalletCreation: React.FC<WalletCreationProps> = () => {
   const [username, setUsername] = useState('');
   const [existingUser, setExistingUser] = useState('');
 
+
+  const useLocalBackend = false; // Change this based on your environment
+
+  const backendUrl = useLocalBackend ? 'http://localhost:3001' : 'https://nexus-wallet-script-production.up.railway.app';
+
+
   const handleUsernameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setUsername(event.target.value);
   };
@@ -57,7 +63,8 @@ const WalletCreation: React.FC<WalletCreationProps> = () => {
 
   const onSubmitCreateUser = async () => {
     try {
-        const response = await axios.get(`http://localhost:3001/createUser/${username}`);
+        const response = await axios.get(`${backendUrl}/createUser/${username}`);
+      
         if (response.status === 201) { // Check for successful status code
           const { status, message } = response.data.data;
           console.log(response.status);
@@ -115,7 +122,7 @@ const WalletCreation: React.FC<WalletCreationProps> = () => {
   const onSubmitSessionToken = async () => {
     setIsLoading(true); // Set loading state to true
     try {
-      const response = await axios.get(`http://localhost:3001/createSession/${existingUser}`);
+      const response = await axios.get(`${backendUrl}/createSession/${existingUser}`);
 
       if(response.status === 200){
       console.log(response)
@@ -179,7 +186,7 @@ const WalletCreation: React.FC<WalletCreationProps> = () => {
   const onSubmitChallengeID = async () => {
     setIsLoadingC(true);
     try {
-      const response = await axios.get(`http://localhost:3001/createChallenge/${existingUser}/${walletSelection}/${userToken}`);
+      const response = await axios.get(`${backendUrl}/createChallenge/${existingUser}/${walletSelection}/${userToken}`);
   
       if (response.status === 200) {
         const { challengeId } = response.data;
