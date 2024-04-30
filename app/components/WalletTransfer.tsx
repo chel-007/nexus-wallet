@@ -74,6 +74,8 @@ const WalletTransfer: React.FC<WalletTransferProps> = () => {
 
   const onSubmitUserId = async () => {
     setButtonLStates({ ...buttonLStates, submitButton: true });
+
+    console.log("i got here")
   
     try {
 
@@ -81,7 +83,7 @@ const WalletTransfer: React.FC<WalletTransferProps> = () => {
 
         let prevUser = localStorage.getItem('userId');
         let expirationTime = localStorage.getItem('sessionTokenExpiration')
-      
+      console.log("i also got here")
       
       // console.log(prevUser)
       // console.log(userToken)
@@ -95,7 +97,7 @@ const WalletTransfer: React.FC<WalletTransferProps> = () => {
         console.log(walletResponse.data); // Log the wallets data received from the backend
         processWalletResponse(walletResponse.data);
       }
-      } else {
+       else {
         // UserToken doesn't exist or has expired, fetch userId
         const response = await axios.get(`http://localhost:3001/createSession/${userId}`);
 
@@ -128,6 +130,7 @@ const WalletTransfer: React.FC<WalletTransferProps> = () => {
         processWalletResponse(walletResponse.data);
   
       }
+    }
 
     
 
