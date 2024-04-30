@@ -76,18 +76,25 @@ const WalletTransfer: React.FC<WalletTransferProps> = () => {
     setButtonLStates({ ...buttonLStates, submitButton: true });
   
     try {
-      let prevUser = localStorage.getItem('userId');
+
+      if (typeof window !== 'undefined' && window.localStorage) {
+
+        let prevUser = localStorage.getItem('userId');
+        let expirationTime = localStorage.getItem('sessionTokenExpiration')
+      
+      
       // console.log(prevUser)
       // console.log(userToken)
       // console.log(userId)
       // console.log(localStorage.getItem('sessionTokenExpiration'))
-      let expirationTime = localStorage.getItem('sessionTokenExpiration')
+      
 
       if (userId === prevUser && userToken !== '' && expirationTime !== null && parseInt(expirationTime) > Date.now()) {
         const walletResponse = await axios.get(`http://localhost:3001/getWalletID/${userToken}`);
   
         console.log(walletResponse.data); // Log the wallets data received from the backend
         processWalletResponse(walletResponse.data);
+      }
       } else {
         // UserToken doesn't exist or has expired, fetch userId
         const response = await axios.get(`http://localhost:3001/createSession/${userId}`);
@@ -98,6 +105,8 @@ const WalletTransfer: React.FC<WalletTransferProps> = () => {
         setUserToken(userToken);
         setEncryptionKey(encryptionKey);
 
+        if (typeof window !== 'undefined' && window.localStorage) { 
+
         localStorage.setItem('userToken', userToken);
         localStorage.setItem('encryptionKey', encryptionKey);
 
@@ -106,6 +115,8 @@ const WalletTransfer: React.FC<WalletTransferProps> = () => {
         if (expirationTime !== null) {
           localStorage.setItem('sessionTokenExpiration', expirationTime.toString());
         }
+
+      }
 
         const walletResponse = await axios.get(`http://localhost:3001/getWalletID/${userToken}`);
   
@@ -242,7 +253,6 @@ const WalletTransfer: React.FC<WalletTransferProps> = () => {
   
 
   const onSubmit = useCallback(() => {
-    if (!sdk) return; // Check if sdk is initialized
     sdk.setAppSettings({ appId });
     sdk.setAuthentication({ userToken, encryptionKey });
 
@@ -253,7 +263,7 @@ const WalletTransfer: React.FC<WalletTransferProps> = () => {
       }
       toast.success(`Challenge: ${result?.type}, Status: ${result?.status}`);
     });
-  }, [appId, userToken, encryptionKey, challengeId, sdk]);
+  }, [appId, userToken, encryptionKey, challengeId]);
 
   const handleTokenSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const tokenId = event.target.value;

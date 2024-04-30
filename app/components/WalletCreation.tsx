@@ -17,8 +17,8 @@ const WalletCreation: React.FC<WalletCreationProps> = () => {
   }, [])
 
   const [appId, setAppId] = useState('1ee2e3ec-1ece-57cf-af29-6be89375c256');
-  const [userToken, setUserToken] = useState(localStorage.getItem('userToken') || '');
-  const [encryptionKey, setEncryptionKey] = useState(localStorage.getItem('encryptionKey') || '');
+  const [userToken, setUserToken] = useState(typeof window !== 'undefined' ? localStorage.getItem('userToken') || '' : '');
+  const [encryptionKey, setEncryptionKey] = useState(typeof window !== 'undefined' ? localStorage.getItem('encryptionKey') || '' : '');
   const [showInputs, setShowInputs] = useState(false);
   const [showChallenge, setShowChallenge] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -53,7 +53,6 @@ const WalletCreation: React.FC<WalletCreationProps> = () => {
   const onChangeHandler = (key: string, setState: React.Dispatch<React.SetStateAction<string>>) => (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setState(value);
-    //localStorage.setItem(key, value);
   };
 
   const onSubmitCreateUser = async () => {
@@ -86,10 +85,19 @@ const WalletCreation: React.FC<WalletCreationProps> = () => {
   };
 
   const handleButtonClick = () => {
-    const storedExistingUser = localStorage.getItem('existingUser');
+    // const storedExistingUser = localStorage.getItem('existingUser');
+    // const expirationTime = localStorage.getItem('sessionTokenExpiration');
+
+    const storedExistingUser = typeof window !== 'undefined' && localStorage
+      ? localStorage.getItem('existingUser')
+      : null;
+
+    const expirationTime = typeof window !== 'undefined' && localStorage
+      ? localStorage.getItem('sessionTokenExpiration')
+      : null;
+
     console.log(storedExistingUser)
     console.log(existingUser)
-    const expirationTime = localStorage.getItem('sessionTokenExpiration');
   
     if (existingUser !== storedExistingUser) {
       onSubmitSessionToken();
@@ -114,15 +122,18 @@ const WalletCreation: React.FC<WalletCreationProps> = () => {
       const { userToken, encryptionKey } = response.data;
       setUserToken(userToken);
       setEncryptionKey(encryptionKey);
-      localStorage.setItem('userToken', userToken);
-      localStorage.setItem('encryptionKey', encryptionKey);
-      localStorage.setItem('existingUser', existingUser);
+      if (typeof window !== 'undefined' && localStorage) {
+        localStorage.setItem('userToken', userToken);
+        localStorage.setItem('encryptionKey', encryptionKey);
+        localStorage.setItem('existingUser', existingUser);
+      
 
       const expirationTime = Date.now() + 60 * 60 * 1000;
       localStorage.setItem('sessionTokenExpiration', expirationTime.toString());
       toast.success(`${response.status}: Session token created successfully for ${existingUser}`)
       setShowInputs(true);
       }
+    }
       else {
         console.error('Unexpected response status:', response.data, response.status);
         toast.error(response.data.message);
@@ -145,19 +156,23 @@ const WalletCreation: React.FC<WalletCreationProps> = () => {
   };
 
   useEffect(() => {
-    // Check if token and key exist in localStorage and if they're expired
-    const expirationTime = localStorage.getItem('sessionTokenExpiration');
-    localStorage.removeItem('existingUser')
+    if (typeof window !== 'undefined' && localStorage) {
+      const expirationTime = localStorage.getItem('sessionTokenExpiration');
+      // Use expirationTime here if it's retrieved successfully
+    
     if (expirationTime && (Date.now() > parseInt(expirationTime))) {
       // Expired, clear localStorage
-      localStorage.removeItem('userToken');
-      localStorage.removeItem('encryptionKey');
-      localStorage.removeItem('sessionTokenExpiration');
-      localStorage.removeItem('existingUser')
+     
+        localStorage.removeItem('userToken');
+        localStorage.removeItem('encryptionKey');
+        localStorage.removeItem('sessionTokenExpiration');
+        localStorage.removeItem('existingUser')
+      
       setUserToken('');
       setEncryptionKey('');
       setShowInputs(false);
     }
+  }
   }, []);
 
 

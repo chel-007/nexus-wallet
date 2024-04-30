@@ -22,7 +22,9 @@ const WalletRecovery: React.FC<WalletRecoveryProps> = () => {
 
   // State variables
   const [appId, setAppId] = useState('1ee2e3ec-1ece-57cf-af29-6be89375c256');
-  const [userId, setUserId] = useState(localStorage.getItem('userId') || '');
+  const [userId, setUserId] = useState(typeof window !== 'undefined' ? localStorage.getItem('userId') || '' : '');
+//  const [userId, setUserId] = useState(localStorage.getItem('userId') || '');
+  
   const [userToken, setUserToken] = useState(localStorage.getItem('userToken') || '');
   const [encryptionKey, setEncryptionKey] = useState(localStorage.getItem('encryptionKey') || '');
   const [showInputs, setShowInputs] = useState(false);
@@ -40,7 +42,7 @@ const WalletRecovery: React.FC<WalletRecoveryProps> = () => {
     console.log(selectedUser);
   }, [selectedUser]);
   // Fetch user accounts (assumed API endpoint)
-  const fetchUserAccounts = useCallback(async () => {
+  const fetchUserAccounts = async () => {
     try {
 
       setGetUsers(true);
@@ -68,7 +70,7 @@ const WalletRecovery: React.FC<WalletRecoveryProps> = () => {
     finally{
       setGetUsers(false)
     }
-  }, []);
+  };
 
   // Create session token
   const createSessionToken = async () => {
@@ -140,7 +142,6 @@ const WalletRecovery: React.FC<WalletRecoveryProps> = () => {
 
   
   const onSubmit = useCallback(() => {
-    if (!sdk) return; // Check if sdk is initialized
     sdk.setAppSettings({ appId });
     sdk.setAuthentication({ userToken, encryptionKey });
 
@@ -151,7 +152,7 @@ const WalletRecovery: React.FC<WalletRecoveryProps> = () => {
       }
       toast.success(`Challenge: ${result?.type}, Status: ${result?.status}`);
     });
-  }, [appId, userToken, encryptionKey, challengeId, sdk]);
+  }, [appId, userToken, encryptionKey, challengeId]);
 
   return (
     <>

@@ -1,5 +1,5 @@
 "use client"
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import WalletCreation from './components/WalletCreation';
 import WalletTransfer from './components/WalletTransfer';
 import WalletRecovery from './components/WalletRecovery';
@@ -9,6 +9,13 @@ interface WalletProps {}
 const Wallet: React.FC<WalletProps> = () => {
   const [selectedOption, setSelectedOption] = useState<string>('walletCreation'); // Initial selection
 
+  useEffect(() => {
+    // Check for window and localStorage
+    if (typeof window !== 'undefined' && window.localStorage) {
+      // Use localStorage here
+    }
+  }, []);
+  
   const handleOptionClick = (option: string) => {
     setSelectedOption(option);
   };
