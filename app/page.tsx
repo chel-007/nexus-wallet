@@ -4,6 +4,7 @@ import WalletCreation from './components/WalletCreation';
 import WalletTransfer from './components/WalletTransfer';
 import WalletRecovery from './components/WalletRecovery';
 import Crafting from './components/Crafting';
+import NFTCollection from './components/NFTCollection';
 import io from 'socket.io-client'; // Assuming you installed socket.io-client
 import { ToastContainer, toast } from 'react-toastify';
 import './components/ToastContainer.css';
@@ -28,18 +29,41 @@ socket.on('disconnect', () => {
   console.log('Disconnected from WebSocket server');
 });
 
+interface Notification {
+  id: string;
+  blockchain: string;
+  walletId: string;
+  tokenId?: string; // Optional property for NFTs
+  userId: string;
+  destinationAddress: string;
+  amounts: string[];
+  nftTokenIds?: string[]; // Optional property for NFTs
+  refId: string;
+  state: string;
+  errorReason: string;
+  transactionType: string;
+  createDate: string;
+  updateDate: string;
+  errorDetails: any;
+}
+
 socket.on('notification', (notificationData) => {
   console.log('Received notification:', notificationData);
 
-  const {notification} = notificationData
-  console.log(notification)
+  // const { notificationType } = notificationData;
 
-  toast.info(`New Notification, ${notification}`)
+  // Type assertion (optional): Ensure notification is of type Notification
+  const notification: Notification = notificationData.notification as Notification;
 
-
-  // Update your UI based on the received notification data (e.g., display notification)
-  // ... (Your UI update logic based on notificationData)
+  if (notification.transactionType === 'OUTBOUND') {
+    toast.info(`Your ${notification.transactionType} Transfer to ${notification.destinationAddress} is ${notification.state}`);
+  } else {
+    // Handle other notification types (add logic for different types)
+    console.log('Unknown notification type:', notification.errorReason);
+  }
 });
+
+
 
 interface WalletProps {}
 
@@ -147,9 +171,9 @@ const Wallet: React.FC<WalletProps> = () => {
                 <li>
                 <button
               className={`w-full h-10 text-md text-center hover:bg-gray-600 px-4 py-2 rounded-lg font-bold ${
-                selectedOption === 'Crafting' ? 'bg-gray-600 text-white' : 'bg-gray-800 text-white text-opacity-30'
+                selectedOption === 'NFTCollection' ? 'bg-gray-600 text-white' : 'bg-gray-800 text-white text-opacity-30'
               }`}
-              onClick={() => handleOptionClick('Crafting')}
+              onClick={() => handleOptionClick('NFTCollection')}
             >
                 NFT Collection
                 </button>
@@ -174,6 +198,7 @@ const Wallet: React.FC<WalletProps> = () => {
         {selectedOption === 'walletTransfer' && <WalletTransfer />}
         {selectedOption === 'walletRecovery' && <WalletRecovery />}
         {selectedOption === 'Crafting' && <Crafting />}
+        {selectedOption === 'NFTCollection' && <NFTCollection />}
       </div>
       <ToastContainer/>
     </div>

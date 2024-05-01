@@ -6,6 +6,7 @@ import { SVGLoader } from './SVGIcon';
 import axios, { AxiosError } from 'axios'
 import './ToastContainer.css'
 import 'react-toastify/dist/ReactToastify.css';
+import io from 'socket.io-client';
 
 interface WalletTransferProps {}
 
@@ -58,7 +59,7 @@ const WalletTransfer: React.FC<WalletTransferProps> = () => {
   const [isSendMode, setIsSendMode] = useState(true);
   const [toastShown, setToastShown] = useState(false);
 
-  const useLocalBackend = true; // Change this based on your environment
+  const useLocalBackend = false; // Change this based on your environment
 
   const backendUrl = useLocalBackend ? 'http://localhost:3001' : 'https://nexus-wallet-script-production.up.railway.app';
 
@@ -76,6 +77,43 @@ const WalletTransfer: React.FC<WalletTransferProps> = () => {
       getTokenBalances(walletId);
     }
   }, [walletId]);
+
+  const socket = io('https://nexus-wallet-script-production.up.railway.app/', {
+  transports: ['websocket']
+});
+
+interface Notification {
+  id: string;
+  blockchain: string;
+  walletId: string;
+  tokenId?: string; // Optional property for NFTs
+  userId: string;
+  destinationAddress: string;
+  amounts: string[];
+  nftTokenIds?: string[]; // Optional property for NFTs
+  refId: string;
+  state: string;
+  errorReason: string;
+  transactionType: string;
+  createDate: string;
+  updateDate: string;
+  errorDetails: any;
+}
+socket.on('notification', (notificationData: any) => {
+  console.log('Received notification:', notificationData);
+
+  // const { notificationType } = notificationData;
+
+  // Type assertion (optional): Ensure notification is of type Notification
+  const notification: Notification = notificationData.notification as Notification;
+
+  if (notification.transactionType === 'OUTBOUND') {
+    toast.info(`Your ${notification.transactionType} Transfer to ${notification.destinationAddress} is ${notification.state}`);
+  } else {
+    // Handle other notification types (add logic for different types)
+    console.log('Unknown notification type:', notification.errorReason);
+  }
+});
 
   const onSubmitUserId = async () => {
     setButtonLStates({ ...buttonLStates, submitButton: true });
