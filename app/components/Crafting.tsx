@@ -1,4 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { SVGLoader } from './SVGIcon';
+import axios, { AxiosError } from 'axios';
+import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer, toast } from 'react-toastify';
 
 interface CraftingItem {
@@ -6,27 +9,62 @@ interface CraftingItem {
     name: string;
     onClick?: () => void; // Optional onClick handler
     isSelected?: boolean; // Track selection state
-    cooldown?: number; // Cooldown time in milliseconds (optional)
+    
   }
 
-const CraftingItem: React.FC<CraftingItem> = ({ image, name, onClick, isSelected, cooldown }) => (
-    <div
-      className={`flex w-full h-50 items-center justify-center p-2 rounded-lg shadow-md cursor-pointer hover:bg-gray-200 ${
-        isSelected ? cooldown ? 'bg-gray-300' : 'bg-blue-400' : 'bg-gray-100'
-      }`}
-      onClick={onClick}
-      style={cooldown ? { pointerEvents: 'none' } : {}} // Disable click on cooldown
-    >
-      <img src={image} alt={name} className="w-10 object-cover mr-2" />
-      <span className="text-sm font-medium">{name}</span>
-    </div>
-  );
+  const CraftingItem: React.FC<CraftingItem> = ({ image, name, onClick, isSelected }) => {
+    const [cooldown, setCooldown] = useState<number | undefined>(parseInt(localStorage.getItem(`${name}_cooldown`) || '') || undefined);
+  
+    // useEffect(() => {
+    //   console.log(localStorage); // Log local storage to check cooldown values
+    // }, []);
+
+    const handleClick = () => {
+      console.log('Item clicked:', name); // Log the clicked item
+      if (!cooldown) {
+        onClick?.();
+      } else {
+        // Calculate remaining cooldown time in minutes
+        const remainingTimeInMinutes = Math.ceil((cooldown - Date.now()) / (1000 * 60));
+        // Handle cooldown
+        console.log(`${name} is on cooldown. Remaining cooldown time: ${remainingTimeInMinutes} minutes`);
+        toast.info(`${name} is on cooldown. Remaining cooldown time: ${remainingTimeInMinutes} minutes`);
+      }
+    };
+    
+    
+  
+    return (
+      <div
+        className={`flex w-full h-100 py-6 items-center justify-center p-2 rounded-lg shadow-md cursor-pointer hover:bg-gray-200 ${
+          isSelected ? (cooldown && Date.now() < cooldown ? 'bg-gray-300' : 'bg-blue-400') : 'bg-gray-100'
+        }`}
+        onClick={handleClick}
+        style={cooldown && Date.now() < cooldown ? { } : {}} // Disable click if cooldown is active
+      >
+        {/* <img src={image} alt={name} className="w-10 object-cover mr-2" /> */}
+        <span className={`text-md font-medium p-1 ${cooldown && Date.now() < cooldown ? 'text-gray-600' : 'text-black'}`}>
+          {name}
+        </span>
+      </div>
+    );
+    
+  };
+  
 
 const Crafting = () => {
-    const [selectedItems, setSelectedItems] = useState<CraftingItem[]>([]);
-    const [craftedItems, setCraftedItems] = useState<string[]>([]); // Store crafted item names
 
-    
+  const [selectedItems, setSelectedItems] = useState<CraftingItem[]>([]);
+  const [craftedItems, setCraftedItems] = useState<string[]>([]); // Store crafted item names
+  const [walletAddress, setWalletAddress] = useState(localStorage.getItem('walletAddress') || '');
+
+  const [showInput, setShowInput] = useState(false);
+  const useLocalBackend = false; 
+
+  const backendUrl = useLocalBackend ? 'http://localhost:3001' : 'https://nexus-wallet-script-production.up.railway.app';
+
+  let uri: string;
+
   const craftingItems: CraftingItem[] = [
     { image: 'water.png', name: 'Water' }, // Replenishes health points
     { image: 'portal_core.png', name: 'Portal Core' }, // Creates temporary portals for strategic movement or escapes
@@ -58,53 +96,98 @@ const Crafting = () => {
       selectedItems.find((item) => item.name === craftedName)
     ); // Check if both items are selected and not already crafted
   
-    const craftItem = () => {
+    
+    const craftItem = async () => {
       if (!isCraftable) return;
-  
+    
       const [item1, item2] = selectedItems;
-      const craftedItemName = getCombinationName(item1.name, item2.name); // Get crafted item name based on combination
-  
-      // Implement your crafting logic here (e.g., send NFT data)
-      console.log(`Crafting ${craftedItemName}!`); // Placeholder for your NFT logic (replace with your implementation)
-  
-      // Update crafted items and cooldowns
-      setCraftedItems([...craftedItems, craftedItemName]);
-      setSelectedItems([]);
-  
-      const cooldown = 1 * 60 * 60 * 1000; // 1 hour cooldown in milliseconds
-      selectedItems.forEach((item) => (item.cooldown = cooldown));
-      setTimeout(() => {
-        setSelectedItems(selectedItems.map((item) => ({ ...item, cooldown: 0 }))); // Reset cooldown after 1 hour
-      }, cooldown);
-  
-      // Toast notification for cooldown
-      toast.info(`Crafted ${craftedItemName}! Cooldown: 1 hour`, {
-        position: "top-center",
-        autoClose: 5000,
-        closeOnClick: true,
-      });
-    };
-  
-    const getCombinationName = (item1Name: string, item2Name: string) => {
-      // Implement logic to determine crafted item name based on combination
-      const combinations = {
-        'Water': {
-          'Energy Gauntlet': 'Energized Water Blast',
-          'Portal Core': 'Hydrated Portal Jump', // Water helps with faster portal travel
-        },
-        'Portal Core': {
-          'Gravity Grenade': 'Disruption Field', // Portal Core disrupts a wider area with the grenade
-          'Sonic Emitter': 'Distorted Portal', // Creates a confusing portal with sonic waves
-        },
-        'Energy Gauntlet': {
-          'Hoverboard Blueprint': 'Powered Hoverboard',
-          'Jumpack Blueprint': 'Boosted Jumpack', // Energy Gauntlet enhances jumpack performance
-        },
-        // Add more combinations as needed
-      };
-  
-      return combinations[item1Name]?.[item2Name] || 'Unknown Combination';
-    };
+      const craftedItemName = `${item1.name} + ${item2.name}`; // Combine item names
+    
+    try {
+
+      (uri as string)
+
+      const craftItemLogic = async () => {
+        console.log("did i get here?")
+
+        const mintNFT = await axios.get(`${backendUrl}/mintNFT/${walletAddress}/${encodeURIComponent(uri)}`);
+    
+        if (mintNFT) {
+
+        const { response } = mintNFT.data.response
+        
+        console.log(response)
+
+        if(response.id){
+          localStorage.setItem('walletAddress', walletAddress)
+    
+          setCraftedItems([...craftedItems, craftedItemName]);
+          setSelectedItems([]);
+      
+          const cooldown = Date.now() + 1 * 60 * 60 * 1000; // Set cooldown expiration time
+          // Apply cooldown to captured selected items in local storage
+          localStorage.setItem(`${item1.name}_cooldown`, cooldown.toString());
+          localStorage.setItem(`${item2.name}_cooldown`, cooldown.toString());
+      
+          toast.info(`Crafted ${craftedItemName}! Cooldown: 1 hour`);
+        }
+    
+      }
+      else {
+        // Handle unsuccessful mint (e.g., display error message)
+        toast.error('Minting failed! Please try again.');
+      }
+  };
+    
+      if (
+        (item1.name === 'Hoverboard Blueprint' && item2.name === 'Jumpack Blueprint') ||
+        (item1.name === 'Jumpack Blueprint' && item2.name === 'Hoverboard Blueprint')
+      ) {
+        uri = 'https://magenta-golden-kangaroo-945.mypinata.cloud/ipfs/QmZren8mecDysNNW925v2kAegoPxmD7of1mHZH7gSX2Rwo';
+      } 
+      
+      else if (
+        (item1.name === 'Invisibility Serum' && item2.name === 'Sonic Emitter') ||
+        (item1.name === 'Sonic Emitter' && item2.name === 'Invisibility Serum')
+      ) {
+        uri = 'https://magenta-golden-kangaroo-945.mypinata.cloud/ipfs/QmNeZBaghtfmmjKsN2egDwFJSyH58PonezNphgX7bx66pP';
+      } 
+      
+      else if (
+        (item1.name === 'Forcefield Generator' && item2.name === 'Repair Drone') ||
+        (item1.name === 'Repair Drone' && item2.name === 'Forcefield Generator')
+      ) {
+        uri = 'https://magenta-golden-kangaroo-945.mypinata.cloud/ipfs/Qma7jSq5ByGs8vBszBa5amsQZhhD8v7cc9cvM7biLqsRQ8';
+      } 
+      
+      else if (
+        (item1.name === 'Water' && item2.name === 'Energy Gauntlet') ||
+        (item1.name === 'Energy Gauntlet' && item2.name === 'Water')
+      ) {
+        uri = 'https://magenta-golden-kangaroo-945.mypinata.cloud/ipfs/QmfXPUCRP9RdQbt8jmsermy5mVaQjUEWSRScU1yMgcuhVb';
+      } 
+      
+      else if (
+        (item1.name === 'Portal Core' && item2.name === 'Gravity Grenade') ||
+        (item1.name === 'Gravity Grenade' && item2.name === 'Portal Core')
+      ) {
+        uri = 'https://magenta-golden-kangaroo-945.mypinata.cloud/ipfs/QmQx7bSpJmcTYVyDXirp5YiatA4NMnBJ2QXYAeWNpDfECZ';
+      } 
+      
+      else {
+        toast.error('Invalid item combination for crafting!');
+        return; // Exit if no valid combination found
+      }
+    
+      craftItemLogic();
+      
+    }
+    catch(error){
+      console.error(error)
+    }
+  };
+    
+
   
     // Load crafted items from local storage on component mount
     useEffect(() => {
@@ -145,6 +228,7 @@ return (
               />
             ))}
           </div>
+         <div className=' space-y-6 flex flex-col'> 
           <div className="mt-6 flex justify-center">
             {selectedItems.length === 0 ? (
               <p className="text-gray-300">Select two items to craft</p>
@@ -158,8 +242,15 @@ return (
               </>
             )}
           </div>
+          <input
+            className="text-gray-700 px-3 py-2 rounded-md focus:outline-none"
+            disabled={selectedItems.length != 2}
+            placeholder="Enter Wallet Address"
+            value={walletAddress}
+            onChange={(event) => setWalletAddress(event.target.value)}
+            />
           <button
-            className={`mt-4 py-2 px-4 text-sm font-medium rounded-lg shadow-md ${
+            className={`mt-4 mx-auto py-2 px-4 text-sm font-medium rounded-lg shadow-md ${
               !isCraftable ? 'bg-gray-400 text-white cursor-not-allowed' : 'bg-blue-500 text-white hover:bg-blue-700'
             }`}
             disabled={!isCraftable}
@@ -167,6 +258,9 @@ return (
           >
             Craft
           </button>
+          </div>
+
+          <ToastContainer />
         </div>
 );      
 };

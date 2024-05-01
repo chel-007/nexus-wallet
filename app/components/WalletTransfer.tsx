@@ -39,8 +39,8 @@ const WalletTransfer: React.FC<WalletTransferProps> = () => {
   const [wallets, setWallets] = useState<WalletData[]>([]);
   const [selectedWalletId, setSelectedWalletId] = useState<string>('');
   const [selectedWallet, setSelectedWallet] = useState<string>('');
-  const [walletAddress, setWalletAddress] = useState<string>('')
-  const [walletId, setWalletId] = useState<string>('');
+  const [walletAddress, setWalletAddress] = useState(localStorage.getItem('walletAddress') || '')
+  const [walletId, setWalletId] = useState(localStorage.getItem('walletId') || '');
   const [walletType, setWalletType] = useState<string>('');
   const [walletBlock, setWalletBlock] = useState<string>('');
   const [balances, setBalances] = useState<Record<string, string>>({});
@@ -214,9 +214,11 @@ socket.on('notification', (notificationData: any) => {
       const { id, address, blockchain, accountType } = firstWallet;
   
       setWalletId(id);
+      localStorage.setItem('walletId', id)
       setWalletType(accountType);
       setWalletBlock(blockchain);
       setWalletAddress(address);
+      localStorage.setItem('walletAddress', address)
   
       // await new Promise((resolve) => setTimeout(resolve, 2000));
       // await getTokenBalances(id);
