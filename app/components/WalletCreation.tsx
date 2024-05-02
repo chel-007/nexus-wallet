@@ -32,7 +32,7 @@ const WalletCreation: React.FC<WalletCreationProps> = () => {
   const [existingUser, setExistingUser] = useState('');
 
 
-  const useLocalBackend = true; // Change this based on your environment
+  const useLocalBackend = false; // Change this based on your environment
 
   const backendUrl = useLocalBackend ? 'http://localhost:3001' : 'https://nexus-wallet-script-production.up.railway.app';
 
