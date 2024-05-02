@@ -9,6 +9,7 @@ import io from 'socket.io-client'; // Assuming you installed socket.io-client
 import { ToastContainer, toast } from 'react-toastify';
 import './components/ToastContainer.css';
 import 'react-toastify/dist/ReactToastify.css';
+import axios from 'axios';
 
 
 const socket = io('https://nexus-wallet-script-production.up.railway.app/', {
@@ -47,37 +48,76 @@ interface Notification {
   errorDetails: any;
 }
 
-socket.on('notification', (notificationData) => {
-  console.log('Received notification:', notificationData);
-
-  // const { notificationType } = notificationData;
-
-  // Type assertion (optional): Ensure notification is of type Notification
-  const notification: Notification = notificationData.notification as Notification;
-
-  if (notification.transactionType === 'OUTBOUND') {
-    toast.info(`Your ${notification.transactionType} Transfer to ${notification.destinationAddress} is ${notification.state}`);
-  } else {
-    // Handle other notification types (add logic for different types)
-    console.log('Unknown notification type:', notification.errorReason);
-  }
-});
-
-
 
 interface WalletProps {}
 
 const Wallet: React.FC<WalletProps> = () => {
-  const [selectedOption, setSelectedOption] = useState<string>('walletCreation'); // Initial selection
-
-  const [isWeb3GamingActive, setIsWeb3GamingActive] = useState(false);
-
   useEffect(() => {
     // Check for window and localStorage
+    console.log("checking state")
     if (typeof window !== 'undefined' && window.localStorage) {
       // Use localStorage here
     }
   }, []);
+  const [selectedOption, setSelectedOption] = useState<string>('walletCreation'); // Initial selection
+  const [userId] = useState(localStorage.getItem('userId') || '');
+  const [walletId] = useState(localStorage.getItem('walletId') || '');
+  const [walletAddress] = useState(localStorage.getItem('walletAddress') || '');
+
+
+  const [isWeb3GamingActive, setIsWeb3GamingActive] = useState(false);
+
+  socket.on('notification', (notificationData) => {
+    //console.log('Received notification:', notificationData);
+  
+    const notification: Notification = notificationData.notification as Notification;
+  
+    if (notification.transactionType === 'OUTBOUND' && notification.userId === userId) {
+      toast.success(`${userId} ${notification.transactionType} Transfer to ${notification.destinationAddress} is ${notification.state}`);
+
+      console.log("how many times")
+          // Prepare notification content
+    const title = `${notification.transactionType} Transfer`;
+    const body = `${notification.transactionType === 'OUTBOUND' ? userId : notification.walletId} transfer to ${notification.destinationAddress} is ${notification.state}`;
+
+    // Request permission if not already granted
+    if (Notification.permission !== 'granted') {
+      Notification.requestPermission().then((permission) => {
+        if (permission === 'granted') {
+          // Show notification if permission granted
+          showNotification(title, body);
+        }
+      });
+    } else {
+      // Show notification directly if permission granted
+      showNotification(title, body);
+    }
+
+    } 
+    else if (notification.transactionType === 'INBOUND' && notification.userId === userId){
+      toast.info(`${userId} has ${notification.transactionType} Transfer from ${notification.walletId} that is ${notification.state}`);
+  }
+    else if (
+      notification.transactionType === 'INBOUND' &&
+      notification.destinationAddress === walletAddress &&
+      notification.nftTokenIds?.some((tokenId) => !isNaN(Number(tokenId)))
+    ) {
+      toast.info(`Incoming NFT Transfer from ${notification.walletId} that is ${notification.state}`);
+  }  
+  else {
+    console.log('Unknown notification type:', notification.userId);
+  }
+});
+
+  function showNotification(title: string, body: string) {
+    const notification = new Notification(title, {
+      body: body
+    });
+  
+    // Handle notification events (optional)
+    notification.onclick = () => window.focus(); // Focus window on notification click
+    notification.onclose = () => console.log('Notification closed');
+  }
   
   const handleOptionClick = (option: string) => {
     setSelectedOption(option);
@@ -139,13 +179,13 @@ const Wallet: React.FC<WalletProps> = () => {
                   checked={isWeb3GamingActive}
                   onChange={handleWeb3GamingToggle}
                 />
-                {/* <div
+                <div
                   className={`w-5 h-5 bg-gray-700 rounded-full z-10
                     peer checked:bg-blue-600 peer checked:after:translate-x-100
                     transition duration-500 ease-in-out transform ${
                       isWeb3GamingActive ? '-translate-x-100' : 'translate-x-full'
                     }`}
-                /> */}
+                />
 
               </div>
             </div>
@@ -199,7 +239,7 @@ const Wallet: React.FC<WalletProps> = () => {
         {selectedOption === 'Crafting' && <Crafting />}
         {selectedOption === 'NFTCollection' && <NFTCollection />}
       </div>
-      <ToastContainer/>
+      <ToastContainer containerId={"friendRequest"}/>
     </div>
   );
 };

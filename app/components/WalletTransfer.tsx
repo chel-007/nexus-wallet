@@ -72,44 +72,11 @@ const WalletTransfer: React.FC<WalletTransferProps> = () => {
     }
   }, [toastShown]);
   
-  // useEffect(() => {
-  //   if (walletId) {
-  //     getTokenBalances(walletId);
-  //   }
-  // }, [walletId]);
-
-  const socket = io('https://nexus-wallet-script-production.up.railway.app/', {
-  transports: ['websocket']
-});
-
-interface Notification {
-  id: string;
-  blockchain: string;
-  walletId: string;
-  tokenId?: string; // Optional property for NFTs
-  userId: string;
-  destinationAddress: string;
-  amounts: string[];
-  nftTokenIds?: string[];
-  refId: string;
-  state: string;
-  errorReason: string;
-  transactionType: string;
-  createDate: string;
-  updateDate: string;
-  errorDetails: any;
-}
-socket.on('notification', (notificationData: any) => {
-  console.log('Received notification:', notificationData);
-
-  const notification: Notification = notificationData.notification as Notification;
-
-  if (notification.transactionType === 'OUTBOUND') {
-    toast.info(`Your ${notification.transactionType} Transfer to ${notification.destinationAddress} is ${notification.state}`);
-  } else {
-    console.log('Unknown notification type:', notification.errorReason);
-  }
-});
+  useEffect(() => {
+    if (walletId) {
+      getTokenBalances(walletId);
+    }
+  }, [walletId]);
 
   const onSubmitUserId = async () => {
     setButtonLStates({ ...buttonLStates, submitButton: true });
@@ -278,22 +245,6 @@ socket.on('notification', (notificationData: any) => {
     }
   };
 
-
-  
-
-  const onSubmit = useCallback(() => {
-    sdk.setAppSettings({ appId });
-    sdk.setAuthentication({ userToken, encryptionKey });
-
-    sdk.execute(challengeId, (error, result) => {
-      if (error) {
-        toast.error(`Error: ${error?.message ?? 'Error!'}`);
-        return;
-      }
-      toast.success(`Challenge: ${result?.type}, Status: ${result?.status}`);
-    });
-  }, [appId, userToken, encryptionKey, challengeId]);
-
   const handleTokenSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const tokenId = event.target.value;
     setSelectedToken(tokenId);
@@ -314,6 +265,21 @@ socket.on('notification', (notificationData: any) => {
   // console.log(`this is selectedWalletId,${selectedWalletId}`)
   // console.log(destinationAdd)
   // console.log(`this is selectedTokenId, ${selectedToken}`)
+
+  const onSubmit = useCallback(() => {
+    console.log(sdk)
+    sdk.setAppSettings({ appId });
+    
+    sdk.setAuthentication({ userToken, encryptionKey });
+
+    sdk.execute(challengeId, (error, result) => {
+      if (error) {
+        toast.error(`Error: ${error?.message ?? 'Error!'}`);
+        return;
+      }
+      toast.success(`Challenge: ${result?.type}, Status: ${result?.status}`);
+    });
+  }, [appId, userToken, encryptionKey, challengeId]);
 
 return (
   <div className="flex flex-col space-y-4">
@@ -504,7 +470,7 @@ return (
 
 
           <button
-            disabled={!balances || !selectedToken || !transferAmount || !transferWallet ||!destinationAdd}
+            disabled={!balances || !selectedToken || !transferAmount || !transferWallet || !destinationAdd}
             className="px-4 py-2 rounded-md text-white bg-blue-500 hover:bg-opacity-70 disabled:bg-gray-400 focus:outline-none"
             onClick={onSubmit}
           >

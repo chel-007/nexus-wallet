@@ -21,16 +21,18 @@ const WalletCreation: React.FC<WalletCreationProps> = () => {
   const [encryptionKey, setEncryptionKey] = useState(typeof window !== 'undefined' ? localStorage.getItem('encryptionKey') || '' : '');
   const [showInputs, setShowInputs] = useState(false);
   const [showChallenge, setShowChallenge] = useState(false);
+  const [showIChallenge, setShowIChallenge] = useState(false)
   const [isLoading, setIsLoading] = useState(false);
   const [walletSelection, setWalletSelection] = useState('')
   const [isLoadingC, setIsLoadingC] = useState(false);
   const [challengeId, setChallengeId] = useState('');
+  const [iniChallengeId, setIniChallengeId] = useState('');
 
   const [username, setUsername] = useState('');
   const [existingUser, setExistingUser] = useState('');
 
 
-  const useLocalBackend = false; // Change this based on your environment
+  const useLocalBackend = true; // Change this based on your environment
 
   const backendUrl = useLocalBackend ? 'http://localhost:3001' : 'https://nexus-wallet-script-production.up.railway.app';
 
@@ -66,9 +68,20 @@ const WalletCreation: React.FC<WalletCreationProps> = () => {
         const response = await axios.get(`${backendUrl}/createUser/${username}`);
       
         if (response.status === 201) { // Check for successful status code
-          const { status, message } = response.data.data;
+          const { status, message, userToken, encryptionKey, challengeId } = response.data.data;
          // console.log(response.status);
           toast.success(`${status}: ${message}`);
+
+          console.log(response.data.data)
+
+          setUserToken(userToken)
+          setEncryptionKey(encryptionKey)
+          setIniChallengeId(challengeId)
+          setShowIChallenge(true)
+
+          console.log(userToken)
+          console.log(encryptionKey)
+          console.log(iniChallengeId)
         } else {
         //  console.error('Unexpected response status:', response.status);
           toast.error(response.status);
@@ -92,8 +105,6 @@ const WalletCreation: React.FC<WalletCreationProps> = () => {
   };
 
   const handleButtonClick = () => {
-    // const storedExistingUser = localStorage.getItem('existingUser');
-    // const expirationTime = localStorage.getItem('sessionTokenExpiration');
 
     const storedExistingUser = typeof window !== 'undefined' && localStorage
       ? localStorage.getItem('existingUser')
@@ -102,19 +113,18 @@ const WalletCreation: React.FC<WalletCreationProps> = () => {
     const expirationTime = typeof window !== 'undefined' && localStorage
       ? localStorage.getItem('sessionTokenExpiration')
       : null;
-
-    // console.log(storedExistingUser)
-    // console.log(existingUser)
   
     if (existingUser !== storedExistingUser) {
       onSubmitSessionToken();
-      console.log("Creating new session token");
+     // console.log("Creating new session token");
     } else {
-      const currentTime = Date.now();
-      const timeDifference = parseInt(expirationTime || '0') - currentTime;
-      const expirationTimeInMinutes = Math.ceil(timeDifference / (60 * 1000)); // Convert milliseconds to minutes
-      setShowInputs(true)
-      toast.info(`Session token already exists and expires in ${expirationTimeInMinutes} minutes`);
+
+      onSubmitSessionToken()
+      // const currentTime = Date.now();
+      // const timeDifference = parseInt(expirationTime || '0') - currentTime;
+      // const expirationTimeInMinutes = Math.ceil(timeDifference / (60 * 1000));
+      // setShowInputs(true)
+      // toast.info(`Session token already exists and expires in ${expirationTimeInMinutes} minutes`);
     }
   };
   
@@ -128,6 +138,7 @@ const WalletCreation: React.FC<WalletCreationProps> = () => {
     //  console.log(response)
       const { userToken, encryptionKey } = response.data;
       setUserToken(userToken);
+      console.log(userToken)
       setEncryptionKey(encryptionKey);
       if (typeof window !== 'undefined' && localStorage) {
         localStorage.setItem('userToken', userToken);
@@ -189,8 +200,10 @@ const WalletCreation: React.FC<WalletCreationProps> = () => {
       const response = await axios.get(`${backendUrl}/createChallenge/${existingUser}/${walletSelection}/${userToken}`);
   
       if (response.status === 200) {
-        const { challengeId } = response.data;
-        //console.log(response);
+        const { challengeId } = response.data.challengeId;
+        console.log(response.data.challengeId.challengeId);
+
+        console.log(challengeId)
         setChallengeId(challengeId)
         toast.success("ChallengeId Creation successful. Proceed to Create a Wallet")
         setShowChallenge(true)
@@ -220,8 +233,30 @@ const WalletCreation: React.FC<WalletCreationProps> = () => {
         return
       }
       toast.success(`Challenge: ${result?.type}, Status: ${result?.status}`)
+      setChallengeId('')
+      setUserToken('')
+      setEncryptionKey('')
+      setWalletSelection('')
     })
   }, [appId, userToken, encryptionKey, challengeId])
+
+  const onSubmitInitialize = useCallback(() => {
+    sdk.setAppSettings({ appId })
+    sdk.setAuthentication({ userToken, encryptionKey })
+
+    console.log(iniChallengeId)
+    sdk.execute(challengeId, (error, result) => {
+      if (error) {
+        toast.error(`Error: ${error?.message ?? 'Error!'}`)
+        return
+      }
+      toast.success(`Challenge: ${result?.type}, Status: ${result?.status}`)
+      setChallengeId('')
+      setUserToken('')
+      setEncryptionKey('')
+      setWalletSelection('')
+    })
+  }, [appId, userToken, encryptionKey, iniChallengeId])
 
   return (
     <div className="flex flex-col space-y-4">
@@ -248,6 +283,31 @@ const WalletCreation: React.FC<WalletCreationProps> = () => {
       >
         Create UserId
       </button>
+
+      {showIChallenge && (
+        <div className='w-1/2 flex flex-col items-left'>
+          <label className="text-xs text-gray-500">Challenge Id</label>
+          <input
+            className="px-4 py-2 rounded-lg border mt-2 border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 mr-4 mt-2"
+            type="text"
+            value={iniChallengeId}
+            onChange={onChangeHandler('iniChallengeId', setIniChallengeId)}
+            readOnly // Make input read-only after generation
+          />
+        </div>
+      )}
+{showIChallenge && (
+    <button
+      className="w-full py-2 text-white font-medium rounded-lg bg-blue-500 hover:bg-opacity-70 disabled:bg-gray-400"
+      disabled={!iniChallengeId} // Disable button if username is empty
+      onClick={onSubmitInitialize}
+    >
+        Initialize Wallet
+      </button>
+)}
+
+
+
 
       <p className="text-gray-500"> B. Already have a username?. Create a new Nexus Wallet.</p>
       <div className='flex flex-col items-left'>

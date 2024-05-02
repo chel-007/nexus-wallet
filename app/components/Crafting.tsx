@@ -129,11 +129,11 @@ const Crafting = () => {
     
         if (mintNFT) {
 
-        const { response } = mintNFT.data.response
+        const { response } = mintNFT.data
         
         console.log(response)
 
-        if(response.id){
+        if(response){
           localStorage.setItem('walletAddress', walletAddress)
     
           setCraftedItems([...craftedItems, craftedItemName]);
@@ -144,7 +144,7 @@ const Crafting = () => {
           localStorage.setItem(`${item1.name}_cooldown`, cooldown.toString());
           localStorage.setItem(`${item2.name}_cooldown`, cooldown.toString());
       
-          toast.info(`Crafted ${craftedItemName}! Cooldown: 1 hour`);
+          toast.success(`Crafted ${craftedItemName}! Cooldown: 1 hour`);
         }
     
       }
