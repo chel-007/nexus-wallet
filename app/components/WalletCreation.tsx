@@ -76,12 +76,12 @@ const WalletCreation: React.FC<WalletCreationProps> = () => {
 
           setUserToken(userToken)
           setEncryptionKey(encryptionKey)
-          setIniChallengeId(challengeId)
-          setShowIChallenge(true)
+          setChallengeId(challengeId)
+          setShowChallenge(true)
 
           console.log(userToken)
           console.log(encryptionKey)
-          console.log(iniChallengeId)
+          console.log(challengeId)
         } else {
         //  console.error('Unexpected response status:', response.status);
           toast.error(response.status);
@@ -240,23 +240,23 @@ const WalletCreation: React.FC<WalletCreationProps> = () => {
     })
   }, [appId, userToken, encryptionKey, challengeId])
 
-  const onSubmitInitialize = useCallback(() => {
-    sdk.setAppSettings({ appId })
-    sdk.setAuthentication({ userToken, encryptionKey })
+  // const onSubmitInitialize = useCallback(() => {
+  //   sdk.setAppSettings({ appId })
+  //   sdk.setAuthentication({ userToken, encryptionKey })
 
-    console.log(iniChallengeId)
-    sdk.execute(challengeId, (error, result) => {
-      if (error) {
-        toast.error(`Error: ${error?.message ?? 'Error!'}`)
-        return
-      }
-      toast.success(`Challenge: ${result?.type}, Status: ${result?.status}`)
-      setChallengeId('')
-      setUserToken('')
-      setEncryptionKey('')
-      setWalletSelection('')
-    })
-  }, [appId, userToken, encryptionKey, iniChallengeId])
+  //   console.log(iniChallengeId)
+  //   sdk.execute(challengeId, (error, result) => {
+  //     if (error) {
+  //       toast.error(`Error: ${error?.message ?? 'Error!'}`)
+  //       return
+  //     }
+  //     toast.success(`Challenge: ${result?.type}, Status: ${result?.status}`)
+  //     setChallengeId('')
+  //     setUserToken('')
+  //     setEncryptionKey('')
+  //     setWalletSelection('')
+  //   })
+  // }, [appId, userToken, encryptionKey, iniChallengeId])
 
   return (
     <div className="flex flex-col space-y-4">
@@ -300,7 +300,7 @@ const WalletCreation: React.FC<WalletCreationProps> = () => {
     <button
       className="w-full py-2 text-white font-medium rounded-lg bg-blue-500 hover:bg-opacity-70 disabled:bg-gray-400"
       disabled={!iniChallengeId} // Disable button if username is empty
-      onClick={onSubmitInitialize}
+      onClick={onSubmit}
     >
         Initialize Wallet
       </button>
@@ -351,7 +351,7 @@ const WalletCreation: React.FC<WalletCreationProps> = () => {
         )}
       </button>
   
-    {showInputs && (
+    {showInputs || showIChallenge && (
       <div className="flex">
         <div className='w-1/2 flex flex-col items-left'>
           <label className="text-xs text-gray-500">User Token</label>
