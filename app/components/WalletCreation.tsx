@@ -72,16 +72,16 @@ const WalletCreation: React.FC<WalletCreationProps> = () => {
          // console.log(response.status);
           toast.success(`${status}: ${message}`);
 
-          console.log(response.data.data)
+         // console.log(response.data.data)
 
           setUserToken(userToken)
           setEncryptionKey(encryptionKey)
           setChallengeId(challengeId)
           setShowChallenge(true)
 
-          console.log(userToken)
-          console.log(encryptionKey)
-          console.log(challengeId)
+          // console.log(userToken)
+          // console.log(encryptionKey)
+          // console.log(challengeId)
         } else {
         //  console.error('Unexpected response status:', response.status);
           toast.error(response.status);
@@ -138,7 +138,7 @@ const WalletCreation: React.FC<WalletCreationProps> = () => {
     //  console.log(response)
       const { userToken, encryptionKey } = response.data;
       setUserToken(userToken);
-      console.log(userToken)
+     // console.log(userToken)
       setEncryptionKey(encryptionKey);
       if (typeof window !== 'undefined' && localStorage) {
         localStorage.setItem('userToken', userToken);
@@ -201,9 +201,9 @@ const WalletCreation: React.FC<WalletCreationProps> = () => {
   
       if (response.status === 200) {
         const { challengeId } = response.data.challengeId;
-        console.log(response.data.challengeId.challengeId);
+        //console.log(response.data.challengeId.challengeId);
 
-        console.log(challengeId)
+       // console.log(challengeId)
         setChallengeId(challengeId)
         toast.success("ChallengeId Creation successful. Proceed to Create a Wallet")
         setShowChallenge(true)

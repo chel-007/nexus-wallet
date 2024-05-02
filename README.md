@@ -29,15 +29,16 @@ I've implemented three core features: setting up wallet creation, transfers, and
 * **Wallet Recovery:** The wallet recovery process is straightforward. It enables users to initiate recovery if they forget their PIN, and can be completed in less than a minute. Additionally, users can browse through all Nexus Wallet users if they need to recover another forgotten userID.
 
 #### New Advanced Features:
-**Circle Notifications:** Notifications to keep users informed about their transactions status. This is achieved by creating a route on my backend, which is linked to the Circle Console Webhook. Outbound transactions for payments and NFT minting, sends users alerts from the initiation to the completion stage.
+**Circle Notifications:** Ive also implemented Circle Notifications to keep users informed about their transactions status. This is achieved by creating a route on my backend, which is linked to get Notifications sent from the Circle Console Webhook. Outbound transactions for payments and Inbound NFT minting transaction, sends users alerts from the initiation to the completion stage.
+I've filtered transactions sent to each connected client based on certain values like user ID, wallet ID, and address from previous app transactions. This ensures they only receive notifications for transactions they initiated.
+
+Additionally, I experimented further by adding basic browser notifications through the Nexus Wallet App. Users need to allow notifications to be sent. These notifications are only processed for outbound token transactions, and users can receive them even when the app is not in focus.
 
 **NFT Minting & Collection:** One of the most advanced features is activating a Web3 gaming feature by engaging with a test Web3 game. In this game, they can craft basic items and successfully mint combinations. I've deployed an NFT smart contract using **Circle ERC-721 templates** on the **ETH-Sepolia blockchain**. Additionally, I interact with the contract using a *developer-controlled wallet* **encrypted with ciphertext** generated on the backend for each minting transaction initiated.
 
 Users can mint five different types of NFTs and view them in NFT Collection by supplying their wallet ID.
 
 Note: Crafting game mechanics have a cooldown period of 60 minutes after a successful craft, during which another craft cannot be initiated with the same items.
-
-Additionally, across all features, the backend sends back a response after a transaction is initiated, which is then processed to send a toast notification about the status.
 
 
 ### Nexus Wallet Building Paths
@@ -50,10 +51,16 @@ Additionally, across all features, the backend sends back a response after a tra
 * ***Railway - Production Backend***
 * ***Netlify***
 
-**NFT Contract Address:** 0xd5c2933b8b6c84857e5881ee78218033893f3362 - ETH Sepolia
+**NFT Contract Address:** 0xd5c2933b8b6c84857e5881ee78218033893f3362 - on ETH Sepolia
 
 
 
-* Installing Circle Web3 SDK enables interaction with Circle BaseURL via API pathways to execute various functions such as **getting users**, **listing NFTs**, **minting an NFT**, and **creating transfer challenges**.
+* Installing Circle Web3 SDK enables interaction with Circle BaseURL via API pathways to execute various functions such as **initialize new users**, **getting users list for app Id**, **listing NFTs**, **minting an NFT**, and **creating transfer challenges** etc.
 
-* Deploying an Express integrated with Socket.io backend facilitates accessing APIs in production. The backend has been deployed on Railway Node.js infrastructure. Socket.io establishes a real-time websocket connection between the frontend and backend, enabling the distribution of notifications sent from Circle to connected clients.
+* Setting up an Express Server with Socket.io backend facilitates accessing APIs in production. I've deployed the backend on Railway Node.js infrastructure. Socket.io creates a real-time websocket connection between the frontend and backend, letting us send notifications from Circle to connected clients instantly.
+
+
+Thanks for Reading my Writeup!
+
+
+

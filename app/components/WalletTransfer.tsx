@@ -132,18 +132,18 @@ const WalletTransfer: React.FC<WalletTransferProps> = () => {
       if ((error as AxiosError<any>).response?.data?.message) {
         // The request was made and the server responded with a status code
         // that falls out of the range of 2xx
-        console.error('Server responded with:', (error as AxiosError<any>).response?.data);
+        //console.error('Server responded with:', (error as AxiosError<any>).response?.data);
         const errorMessage = (error as AxiosError<any>).response?.data?.message;
         const status = (error as AxiosError<any>).response?.status
         toast.error(`${status}: ${errorMessage}`);
       } else if ((error as AxiosError<any>).response?.status == 500){
-        console.error((error as AxiosError<any>).response)
+        //console.error((error as AxiosError<any>).response)
         const errorMessage = (error as AxiosError<any>).response?.data?.error;
         const status = (error as AxiosError<any>).response?.status
         toast.error(`${status}: ${errorMessage + ' ' +`create new session token`}`);
       }
         else{
-      console.error('Error creating session token:', error);
+      //console.error('Error creating session token:', error);
       toast.error(error.message)
       } 
     } finally {
@@ -152,7 +152,7 @@ const WalletTransfer: React.FC<WalletTransferProps> = () => {
   };
 
   const processWalletResponse = async (data: any) => {
-    console.log(data.data.wallets.length)
+   // console.log(data.data.wallets.length)
     if (data.data.wallets && data.data.wallets.length > 0) {
       const firstWallet = data.data.wallets[0];
   
@@ -201,7 +201,7 @@ const WalletTransfer: React.FC<WalletTransferProps> = () => {
       toast.success("Token Balances retrieved successfully")
 
     } catch (error) {
-      console.error('Error getting token balances:', error);
+      //console.error('Error getting token balances:', error);
       toast.error("Error getting Token Balances. Please Try Again")
     }
     finally {
@@ -232,12 +232,12 @@ const WalletTransfer: React.FC<WalletTransferProps> = () => {
       setShowTrfChallenge(true)
       }
       else{
-        console.log(response.statusText)
+       // console.log(response.statusText)
         toast.error(`${response.status}: Something went wrong while creating challengeId`)
       }
 
     } catch (error) {
-      console.error('Error creating challengeId for Token Transfer:', error);
+     // console.error('Error creating challengeId for Token Transfer:', error);
       toast.error("Error creating challengeId for Token Transfer")
     }
     finally {

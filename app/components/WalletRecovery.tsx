@@ -54,7 +54,7 @@ const WalletRecovery: React.FC<WalletRecoveryProps> = () => {
       const userAccounts = response.data.response.users;
 
       if(response.status === 200){
-        console.log(response.data.response)
+        //console.log(response.data.response)
         setUserList(userAccounts);
 
         toast.success("Fetching Users Successful")
@@ -82,10 +82,10 @@ const WalletRecovery: React.FC<WalletRecoveryProps> = () => {
       const response = await axios.get(`${backendUrl}/createSession/${userId}`);
 
       if (response.status === 200) {
-        console.log(response);
+       // console.log(response);
         const { userToken, encryptionKey } = response.data;
 
-        console.log(userToken)
+        //console.log(userToken)
         setUserToken(userToken);
         setEncryptionKey(encryptionKey);
 
@@ -121,16 +121,16 @@ const WalletRecovery: React.FC<WalletRecoveryProps> = () => {
   
       if (response.status === 200) {
         const { challengeId } = response.data.response;
-        console.log(response.data);
+       // console.log(response.data);
 
         setChallengeId(challengeId)
-        console.log(response.data.response)
+       // console.log(response.data.response)
         toast.success("Challenge Id Creation successful. Send to Initialize")
 
         setShowChallenge(true)
       }
       else{
-        console.log(response.statusText)
+        //console.log(response.statusText)
         toast.error(`${response.status}: Something went wrong while creating challengeId`)
       }
     } catch (error) {
