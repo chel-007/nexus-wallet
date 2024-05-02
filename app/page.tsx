@@ -60,9 +60,9 @@ const Wallet: React.FC<WalletProps> = () => {
     }
   }, []);
   const [selectedOption, setSelectedOption] = useState<string>('walletCreation'); // Initial selection
-  const [userId] = useState(localStorage.getItem('userId') || '');
-  const [walletId] = useState(localStorage.getItem('walletId') || '');
-  const [walletAddress] = useState(localStorage.getItem('walletAddress') || '');
+  const [userId] = useState(typeof window !== 'undefined' ? localStorage.getItem('userId') || '' : '');
+  const [walletId] = useState(typeof window !== 'undefined' ? localStorage.getItem('walletId') || '' : '');
+  const [walletAddress] = useState(typeof window !== 'undefined' ? localStorage.getItem('walletAddress') || '' : '');
 
 
   const [isWeb3GamingActive, setIsWeb3GamingActive] = useState(false);
