@@ -67,23 +67,23 @@ const WalletCreation: React.FC<WalletCreationProps> = () => {
       
         if (response.status === 201) { // Check for successful status code
           const { status, message } = response.data.data;
-          console.log(response.status);
+         // console.log(response.status);
           toast.success(`${status}: ${message}`);
         } else {
-          console.error('Unexpected response status:', response.status);
+        //  console.error('Unexpected response status:', response.status);
           toast.error(response.status);
         }
-      console.log('User creation response:', response.data);
+      //console.log('User creation response:', response.data);
     } catch (error: any) {
-      console.error('Error creating user:', error);
+      //console.error('Error creating user:', error);
       if ((error as AxiosError<any>).response?.data?.message) {
         // The request was made and the server responded with a status code
         // that falls out of the range of 2xx
-        console.error('Server responded with:', (error as AxiosError<any>).response?.data);
+        //console.error('Server responded with:', (error as AxiosError<any>).response?.data);
         const errorMessage = (error as AxiosError<any>).response?.data?.message;
         toast.error(`Error creating user: ${errorMessage}`);
       } else {
-        console.error('Error setting up request:', error.message);
+        //console.error('Error setting up request:', error.message);
         toast.error('Error creating user. Please try again.');
       }
     } finally {
@@ -103,8 +103,8 @@ const WalletCreation: React.FC<WalletCreationProps> = () => {
       ? localStorage.getItem('sessionTokenExpiration')
       : null;
 
-    console.log(storedExistingUser)
-    console.log(existingUser)
+    // console.log(storedExistingUser)
+    // console.log(existingUser)
   
     if (existingUser !== storedExistingUser) {
       onSubmitSessionToken();
@@ -125,7 +125,7 @@ const WalletCreation: React.FC<WalletCreationProps> = () => {
       const response = await axios.get(`${backendUrl}/createSession/${existingUser}`);
 
       if(response.status === 200){
-      console.log(response)
+    //  console.log(response)
       const { userToken, encryptionKey } = response.data;
       setUserToken(userToken);
       setEncryptionKey(encryptionKey);
@@ -142,19 +142,19 @@ const WalletCreation: React.FC<WalletCreationProps> = () => {
       }
     }
       else {
-        console.error('Unexpected response status:', response.data, response.status);
+        //console.error('Unexpected response status:', response.data, response.status);
         toast.error(response.data.message);
       }
     } catch (error: any) {
       if ((error as AxiosError<any>).response?.data?.message) {
         // The request was made and the server responded with a status code
         // that falls out of the range of 2xx
-        console.error('Server responded with:', (error as AxiosError<any>).response?.data);
+       // console.error('Server responded with:', (error as AxiosError<any>).response?.data);
         const errorMessage = (error as AxiosError<any>).response?.data?.message;
         const status = (error as AxiosError<any>).response?.status
         toast.error(`${errorMessage}`);
       } else{
-      console.error('Error creating session token:', error);
+     // console.error('Error creating session token:', error);
       toast.error(error.message)
       }   
     } finally {
@@ -190,18 +190,18 @@ const WalletCreation: React.FC<WalletCreationProps> = () => {
   
       if (response.status === 200) {
         const { challengeId } = response.data;
-        console.log(response);
+        //console.log(response);
         setChallengeId(challengeId)
         toast.success("ChallengeId Creation successful. Proceed to Create a Wallet")
         setShowChallenge(true)
       }
       else{
-        console.log(response.statusText)
+        //console.log(response.statusText)
         toast.error(`${response.status}: Something went wrong while creating challengeId`)
       }
     } catch (error) {
       // Handle error
-      console.error('Error creating challenge:', error);
+      //console.error('Error creating challenge:', error);
       toast.error(`Error creating challenge:', ${error}`)
     } finally {
       setIsLoadingC(false);

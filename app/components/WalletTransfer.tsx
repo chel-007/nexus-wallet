@@ -72,11 +72,11 @@ const WalletTransfer: React.FC<WalletTransferProps> = () => {
     }
   }, [toastShown]);
   
-  useEffect(() => {
-    if (walletId) {
-      getTokenBalances(walletId);
-    }
-  }, [walletId]);
+  // useEffect(() => {
+  //   if (walletId) {
+  //     getTokenBalances(walletId);
+  //   }
+  // }, [walletId]);
 
   const socket = io('https://nexus-wallet-script-production.up.railway.app/', {
   transports: ['websocket']
@@ -90,7 +90,7 @@ interface Notification {
   userId: string;
   destinationAddress: string;
   amounts: string[];
-  nftTokenIds?: string[]; // Optional property for NFTs
+  nftTokenIds?: string[];
   refId: string;
   state: string;
   errorReason: string;
@@ -102,15 +102,11 @@ interface Notification {
 socket.on('notification', (notificationData: any) => {
   console.log('Received notification:', notificationData);
 
-  // const { notificationType } = notificationData;
-
-  // Type assertion (optional): Ensure notification is of type Notification
   const notification: Notification = notificationData.notification as Notification;
 
   if (notification.transactionType === 'OUTBOUND') {
     toast.info(`Your ${notification.transactionType} Transfer to ${notification.destinationAddress} is ${notification.state}`);
   } else {
-    // Handle other notification types (add logic for different types)
     console.log('Unknown notification type:', notification.errorReason);
   }
 });
@@ -118,7 +114,6 @@ socket.on('notification', (notificationData: any) => {
   const onSubmitUserId = async () => {
     setButtonLStates({ ...buttonLStates, submitButton: true });
 
-    console.log("i got here")
   
     try {
 
@@ -126,25 +121,17 @@ socket.on('notification', (notificationData: any) => {
 
         let prevUser = localStorage.getItem('userId');
         let expirationTime = localStorage.getItem('sessionTokenExpiration')
-      console.log("i also got here")
-      
-      // console.log(prevUser)
-      // console.log(userToken)
-      // console.log(userId)
-      // console.log(localStorage.getItem('sessionTokenExpiration'))
       
 
       if (userId === prevUser && userToken !== '' && expirationTime !== null && parseInt(expirationTime) > Date.now()) {
         const walletResponse = await axios.get(`${backendUrl}/getWalletID/${userToken}`);
   
-        console.log(walletResponse.data); // Log the wallets data received from the backend
+        // console.log(walletResponse.data);
         processWalletResponse(walletResponse.data);
       }
        else {
         // UserToken doesn't exist or has expired, fetch userId
         const response = await axios.get(`${backendUrl}/createSession/${userId}`);
-
-        console.log(response)
 
         const { userToken, encryptionKey } = response.data;
         setUserToken(userToken);
@@ -165,19 +152,16 @@ socket.on('notification', (notificationData: any) => {
 
         const walletResponse = await axios.get(`${backendUrl}/getWalletID/${userToken}`);
   
-        console.log(walletResponse.data);
+        // console.log(walletResponse.data);
 
         toast.success("Wallets data Processed Successfully");
 
-        console.log(walletResponse.data.wallets)
+        //console.log(walletResponse.data.wallets)
         processWalletResponse(walletResponse.data);
   
       }
     }
-
-    
-
-    } catch (error: any) {
+  } catch (error: any) {
       if ((error as AxiosError<any>).response?.data?.message) {
         // The request was made and the server responded with a status code
         // that falls out of the range of 2xx
@@ -207,9 +191,10 @@ socket.on('notification', (notificationData: any) => {
   
       setWallets(data.data.wallets);
   
-      console.log(firstWallet)
-      console.log(data.data.wallets)
-      console.log(wallets)
+      // console.log(firstWallet)
+      // console.log(data.data.wallets)
+      // console.log(wallets)
+
       // Extract data from first wallet
       const { id, address, blockchain, accountType } = firstWallet;
   
@@ -220,8 +205,6 @@ socket.on('notification', (notificationData: any) => {
       setWalletAddress(address);
       localStorage.setItem('walletAddress', address)
   
-      // await new Promise((resolve) => setTimeout(resolve, 2000));
-      // await getTokenBalances(id);
       setSelectedWalletId(id);
       setSelectedWallet(address);
     } else {
@@ -232,11 +215,10 @@ socket.on('notification', (notificationData: any) => {
   const getTokenBalances = async (walletid: string) => {
     setButtonLStates({ ...buttonLStates, balancesButton: true });
     try {
-      console.log('i got here')
       const response = await axios.get(`${backendUrl}/getTokenBalances/${walletid}/${userToken}`);
       const tokenBalances = response.data;
 
-      // Process token balances: (Assuming 'amount' is a string)
+      // Process token balances
       const processedBalances = tokenBalances.length === 0
       ? {}
       : tokenBalances.tokenBalances.reduce((acc: Record<string, string>, balance: { token: { id: string }, amount?: string }) => {
@@ -247,7 +229,7 @@ socket.on('notification', (notificationData: any) => {
 
       setBalances(processedBalances) 
   
-      console.log(`Token balances for ${walletid}`, tokenBalances);
+      //console.log(`Token balances for ${walletid}`, tokenBalances);
 
       toast.success("Token Balances retrieved successfully")
 
@@ -269,7 +251,6 @@ socket.on('notification', (notificationData: any) => {
   ) => {
     setButtonLStates({ ...buttonLStates, challengeButton: true });
     try {
-      console.log('i got here')
 
       const stringTransferAmount = transferAmount.toString();
       const response = await axios.get(`
@@ -278,7 +259,7 @@ socket.on('notification', (notificationData: any) => {
 
       if (response.status === 200) {
         const { challengeId } = response.data.trfRes;
-        console.log(response.data.trfRes.challengeId)
+       // console.log(response.data.trfRes.challengeId)
         setChallengeId(challengeId)
        
       setShowTrfChallenge(true)
@@ -328,18 +309,18 @@ socket.on('notification', (notificationData: any) => {
     getTokenBalances(selectedId);
   };
 
-  console.log(`this is userToken, ${userToken}`)
+  // console.log(`this is userToken, ${userToken}`)
   // console.log(`this is traamt, ${transferAmount}`)
   // console.log(`this is selectedWalletId,${selectedWalletId}`)
   // console.log(destinationAdd)
-  console.log(`this is selectedTokenId, ${selectedToken}`)
+  // console.log(`this is selectedTokenId, ${selectedToken}`)
 
-  return (
-<div className="flex flex-col space-y-4">
-  <div className="bg-gray-600 mt-8 mb-4 pb-4 rounded-md p-4 flex flex-col space-y-4">
-    <h3 className="text-lg font-medium text-white">Your Wallet & Token Balances</h3>
+return (
+  <div className="flex flex-col space-y-4">
+    <div className="bg-gray-600 mt-8 mb-4 pb-4 rounded-md p-4 flex flex-col space-y-4">
+     <h3 className="text-lg font-medium text-white">Your Wallet & Token Balances</h3>
 
-    <div className="flex space-x-2">
+      <div className="flex space-x-2">
       <input
         className="text-gray-700 px-3 py-2 rounded-md focus:outline-none"
         placeholder="Enter User ID"

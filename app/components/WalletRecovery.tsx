@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import { W3SSdk } from '@circle-fin/w3s-pw-web-sdk';
-import { SVGLoader, PasswordEye } from './SVGIcon';
+import { SVGLoader } from './SVGIcon';
 import axios, { AxiosError } from 'axios';
 import './ToastContainer.css';
 import 'react-toastify/dist/ReactToastify.css';
@@ -23,7 +23,6 @@ const WalletRecovery: React.FC<WalletRecoveryProps> = () => {
   // State variables
   const [appId, setAppId] = useState('1ee2e3ec-1ece-57cf-af29-6be89375c256');
   const [userId, setUserId] = useState(typeof window !== 'undefined' ? localStorage.getItem('userId') || '' : '');
-//  const [userId, setUserId] = useState(localStorage.getItem('userId') || '');
   
   const [userToken, setUserToken] = useState(localStorage.getItem('userToken') || '');
   const [encryptionKey, setEncryptionKey] = useState(localStorage.getItem('encryptionKey') || '');
@@ -36,20 +35,18 @@ const WalletRecovery: React.FC<WalletRecoveryProps> = () => {
   const [challengeButton, setChallengeButton] = useState(false);
   const [showChallenge, setShowChallenge] = useState(false);
 
-  const useLocalBackend = true; // Change this based on your environment
+  const useLocalBackend = false;
 
   const backendUrl = useLocalBackend ? 'http://localhost:3001' : 'https://nexus-wallet-script-production.up.railway.app';
-
-  //const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
   useEffect(() => {
     console.log(selectedUser);
   }, [selectedUser]);
-  // Fetch user accounts (assumed API endpoint)
+  // Fetch user accounts
   const fetchUserAccounts = async () => {
     try {
     
-      toast.warn("Hey")
+      // toast.warn("Hey")
 
       setGetUsers(true);
       const response = await axios.get(`${backendUrl}/getUsers/${userToken}`);
@@ -62,7 +59,7 @@ const WalletRecovery: React.FC<WalletRecoveryProps> = () => {
 
         toast.success("Fetching Users Successful")
   
-        console.log(userAccounts)
+       // console.log(userAccounts)
       }
 
       else {
@@ -101,7 +98,7 @@ const WalletRecovery: React.FC<WalletRecoveryProps> = () => {
         toast.success(`${response.status}: Session token created successfully for ${userId}`);
         setShowInputs(true);
       } else {
-        // Handle unsuccessful response (e.g., display error message)
+        console.log("Creating sessionToken was Unsuccessful")
       }
     } catch (error) {
       const axiosError = error as AxiosError;

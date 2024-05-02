@@ -96,7 +96,7 @@ const Wallet: React.FC<WalletProps> = () => {
         <ul className="space-y-4">
           <li>
           <button
-            className={`w-full h-40 text-xl text-center hover:bg-gray-600 px-4 py-2 rounded-lg font-bold ${
+            className={`w-full h-32 text-xl text-center hover:bg-gray-600 px-4 py-2 rounded-lg font-bold ${
               selectedOption === 'walletCreation' ? 'bg-gray-600 text-white' : 'bg-gray-800 text-white text-opacity-30'
             }`}
             onClick={() => handleOptionClick('walletCreation')}
@@ -106,7 +106,7 @@ const Wallet: React.FC<WalletProps> = () => {
           </li>
           <li>
             <button
-              className={`w-full h-40 text-xl text-center hover:bg-gray-600 px-4 py-2 rounded-lg font-bold ${
+              className={`w-full h-32 text-xl text-center hover:bg-gray-600 px-4 py-2 rounded-lg font-bold ${
                 selectedOption === 'walletTransfer' ? 'bg-gray-600 text-white' : 'bg-gray-800 text-white text-opacity-30'
               }`}
               onClick={() => handleOptionClick('walletTransfer')}
@@ -116,7 +116,7 @@ const Wallet: React.FC<WalletProps> = () => {
           </li>
           <li>
             <button
-              className={`w-full h-40 text-xl text-center hover:bg-gray-600 px-4 py-2 rounded-lg font-bold ${
+              className={`w-full h-32 text-xl text-center hover:bg-gray-600 px-4 py-2 rounded-lg font-bold ${
                 selectedOption === 'walletRecovery' ? 'bg-gray-600 text-white' : 'bg-gray-800 text-white text-opacity-30'
               }`}
               onClick={() => handleOptionClick('walletRecovery')}
@@ -127,7 +127,7 @@ const Wallet: React.FC<WalletProps> = () => {
                     {/* Web3 Gaming Toggle Container */}
           <li className="flex items-center space-x-2">
             <div className="flex items-center space-x-4">
-              <label htmlFor="web3-gaming-toggle" className="text-gray-300 font-bold font-medium">
+              <label className="text-gray-300 font-bold font-medium">
                 Web3 Gaming
               </label>
               <div
@@ -135,7 +135,6 @@ const Wallet: React.FC<WalletProps> = () => {
               >
                 <input
                   type="checkbox"
-                  id="web3-gaming-toggle"
                   className="opacity-100 peer absolute w-6 h-6 z-20 cursor-pointer"
                   checked={isWeb3GamingActive}
                   onChange={handleWeb3GamingToggle}

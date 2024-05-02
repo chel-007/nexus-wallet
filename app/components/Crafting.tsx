@@ -34,16 +34,16 @@ interface CraftingItem {
     
     
   
-    return (
+  return (
       <div
-        className={`flex w-full h-100 py-6 items-center justify-center p-2 rounded-lg shadow-md cursor-pointer hover:bg-gray-200 ${
+        className={`flex w-full h-20 py-6 items-center justify-center p-2 rounded-lg shadow-md cursor-pointer hover:bg-gray-200 ${
           isSelected ? (cooldown && Date.now() < cooldown ? 'bg-gray-300' : 'bg-blue-400') : 'bg-gray-100'
         }`}
         onClick={handleClick}
         style={cooldown && Date.now() < cooldown ? { } : {}} // Disable click if cooldown is active
       >
         {/* <img src={image} alt={name} className="w-10 object-cover mr-2" /> */}
-        <span className={`text-md font-medium p-1 ${cooldown && Date.now() < cooldown ? 'text-gray-600' : 'text-black'}`}>
+        <span className={`text-sm font-medium p-1 ${cooldown && Date.now() < cooldown ? 'text-gray-600' : 'text-black'}`}>
           {name}
         </span>
       </div>
@@ -58,7 +58,6 @@ const Crafting = () => {
   const [craftedItems, setCraftedItems] = useState<string[]>([]); // Store crafted item names
   const [walletAddress, setWalletAddress] = useState(localStorage.getItem('walletAddress') || '');
 
-  const [showInput, setShowInput] = useState(false);
   const useLocalBackend = false; 
 
   const backendUrl = useLocalBackend ? 'http://localhost:3001' : 'https://nexus-wallet-script-production.up.railway.app';
@@ -77,6 +76,23 @@ const Crafting = () => {
     { image: 'invisibility_serum.png', name: 'Invisibility Serum' }, // Grants temporary invisibility for tactical maneuvers
     { image: 'repair_drone.png', name: 'Repair Drone' }, // Automatically repairs your armor and health over time
   ];
+
+  useEffect(() => {
+    const storedCraftedItems = localStorage.getItem('craftedItems');
+    if (storedCraftedItems) {
+      setCraftedItems(JSON.parse(storedCraftedItems));
+    }
+  
+    // Check for expired cooldowns and remove them
+    Object.keys(localStorage).forEach((key) => {
+      if (key.endsWith('_cooldown')) {
+        const cooldown = parseInt(localStorage.getItem(key) || '');
+        if (cooldown && Date.now() >= cooldown) {
+          localStorage.removeItem(key);
+        }
+      }
+    });
+  }, []);
   
     const handleItemClick = (item: CraftingItem) => {
       const newSelectedItems = [...selectedItems];
@@ -108,7 +124,6 @@ const Crafting = () => {
       (uri as string)
 
       const craftItemLogic = async () => {
-        console.log("did i get here?")
 
         const mintNFT = await axios.get(`${backendUrl}/mintNFT/${walletAddress}/${encodeURIComponent(uri)}`);
     
@@ -134,7 +149,7 @@ const Crafting = () => {
     
       }
       else {
-        // Handle unsuccessful mint (e.g., display error message)
+        // Handle unsuccessful mint
         toast.error('Minting failed! Please try again.');
       }
   };
@@ -202,19 +217,19 @@ const Crafting = () => {
       localStorage.setItem('craftedItems', JSON.stringify(craftedItems));
     }, [craftedItems]);
 
-return (
-        <div className="flex flex-col mt-8 items-center h-screen">
+      return (
+        <div className="flex flex-col mt-4 items-center h-screen">
           <div className="mb-4 bg-gray-600 p-5 rounded-md text-gray-300 w-full">
-            <h3 className="text-lg font-medium mb-2 justify-center font-bold">Crafting Tips</h3>
-            <p>
+            <h3 className="text-lg font-bold mb-2 justify-center font-bold">Crafting Tips</h3>
+            <p className='mb-2'>
               Combine items strategically to enhance your Char fighting capabilities in CMS. Here are some hints:
             </p>
-            <ul className="list-disc pl-4">
-              <li>**Mobility:** Combine Hoverboard Blueprint & Jumpack Blueprint to create a highly maneuverable fighter.</li>
-              <li>**Surprise Attack:** Combine Invisibility Serum with Sonic Emitter for a disorienting and invisible strike.</li>
-              <li>**Defense:** Combine Forcefield Generator with Repair Drone for sustained defense and self-healing.</li>
-              <li>**Fuse Attack:** Combining Water with The energy gauntlet to create a short-range, high-pressure blast.</li>
-              <li>**Strategic Movement:** Combine Portal Core with Gravity Grenade to control the battlefield and disrupt opponents.</li>
+            <ul className="list-disc pl-4 space-y-1">
+              <li className='text-sm'>Mobility: Combine Hoverboard Blueprint & Jumpack Blueprint to create a highly maneuverable fighter.</li>
+              <li className='text-sm'>Surprise Attack: Combine Invisibility Serum with Sonic Emitter for a disorienting and invisible strike.</li>
+              <li className='text-sm'>Defense: Combine Forcefield Generator with Repair Drone for sustained defense and self-healing.</li>
+              <li className='text-sm'>Fuse Attack: Combining Water with The energy gauntlet to create a short-range, high-pressure blast.</li>
+              <li className='text-sm'>Strategic Movement: Combine Portal Core with Gravity Grenade to control the battlefield and disrupt opponents.</li>
             </ul>
           </div>
           <div className="grid w-full grid-cols-5 gap-4">
@@ -224,11 +239,11 @@ return (
                 image={item.image}
                 name={item.name}
                 onClick={() => handleItemClick(item)}
-                isSelected={selectedItems.some((selectedItem) => selectedItem.name === item.name)} // Check selection state
+                isSelected={selectedItems.some((selectedItem) => selectedItem.name === item.name)}
               />
             ))}
           </div>
-         <div className=' space-y-6 flex flex-col'> 
+         <div className=' space-y-4 flex flex-col'> 
           <div className="mt-6 flex justify-center">
             {selectedItems.length === 0 ? (
               <p className="text-gray-300">Select two items to craft</p>
@@ -261,7 +276,7 @@ return (
           </div>
 
           <ToastContainer />
-        </div>
+    </div>
 );      
 };
 

@@ -6,7 +6,9 @@
 After working on the bounty challenge: '**Simplify Building on the Blockchain with Circle and USDC**,' I've gained a deeper understanding of the innovation brought forth by Circle USDC. I commend their extensive and well-organized code documentation, which allowed me to explore a previously unknown concept in just a few days.
 
 For this bounty, I chose to develop the Nexus Wallet, a Circle Programmable-powered wallet with integrated Web3 gaming features.
+
 **Problem Scope:** I've always believed that an independent wallet where players can seamlessly link their profiles to Web3 games without active interaction in the game would be ideal.
+
 **Solution**
 - The wallet could facilitates basic game mechanics like crafting, minting, evolving avatars, and listing etc.
 - Transactions within the wallet and Web3 games are conducted using a unified standard token, such as USDT, USDC, and the Ecosystem's Token.
